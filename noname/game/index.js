@@ -2135,9 +2135,9 @@ export class Game {
 			const ipv4Regex = /^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 			const ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
 
-			// 如果给定的地址是纯ip地址，则自动添加8080端口，兼容以前的地址
+			// 如果给定的地址是纯ip地址，则自动添加当前端口，兼容以前的地址
 			if (ipv4Regex.test(ip) || ipv6Regex.test(ip)) {
-				tempUrl.port = "8080";
+				tempUrl.port = location.port;
 			}
 			// 否则...鉴于原先存在地址为域名/localhost的情况，鉴于原先的联机地址不兼容pathname，如果pathname为"/"，则多加判断
 			else if (tempUrl.pathname == "/") {
@@ -2151,7 +2151,7 @@ export class Game {
 				}
 
 				if (!withport) {
-					tempUrl.port = "8080";
+					tempUrl.port = location.port;
 				}
 			}
 		}
@@ -2428,7 +2428,7 @@ export class Game {
 			void 0;
 		} else {
 			const WebSocketServer = require("ws").Server;
-			const wss = new WebSocketServer({ port: 8080 });
+			const wss = new WebSocketServer({ port: location.port });
 			game.ip = get.ip();
 			wss.on("connection", lib.init.connection);
 		}

@@ -4,5 +4,12 @@ version: "3.9"
 services:
   app:
     build: .
+    container_name: noname-app
     ports:
-      - "8089:8089"
+      - "8089:8089"  # HTTP server + WebSocket (same port)
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    # Optional: Volume mount for persistent data
+    # volumes:
+    #   - ./data:/app/data

@@ -4,7 +4,9 @@ import fs from "fs";
 import path from "path";
 
 const port = {
+	// Vite dev server port for static files
 	client: 8089,
+	// noname-server port for REST APIs and WebSocket in dev mode
 	server: 8088,
 };
 

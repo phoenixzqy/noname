@@ -33,10 +33,7 @@ export class Library {
 	updateURLS = updateURLs;
 	updateURL = updateURLs.github;
 	mirrorURL = updateURLs.coding;
-	// Auto-detect protocol and port: HTTPS uses WSS on 8443, HTTP uses WS on 8080
-	hallURL = typeof location !== "undefined" 
-		? `${isHttps ? 'wss' : 'ws'}://${location.hostname}:${isHttps ? '8443' : '8080'}` 
-		: "127.0.0.1:8080";
+	hallURL = `${isHttps ? "wss" : "ws"}://${location.host}`;
 	assetURL = assetURL;
 	userAgent = userAgentLowerCase;
 	characterDefaultPicturePath = characterDefaultPicturePath;

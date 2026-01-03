@@ -34,8 +34,7 @@ npm run dev
 
 此命令会同时启动：
 - 游戏界面（Vite 开发服务器）：`http://localhost:8089`
-- WebSocket 多人联机服务器：`ws://localhost:8080`
-- 文件服务器：端口 8089
+- 后端服务器（REST API + WebSocket）：端口 8088
 
 **开发模式（HTTPS/WSS）：**
 
@@ -53,8 +52,7 @@ npm run dev:ssl
 
 此命令会同时启动：
 - 游戏界面（HTTPS）：`https://localhost:8089`
-- WebSocket 安全服务器：`wss://localhost:8443`
-- 文件服务器：端口 8089
+- 后端服务器（REST API + WSS）：端口 8088
 
 > **注意**：自签名证书会触发浏览器安全警告，开发时可选择"继续访问"。
 
@@ -63,8 +61,7 @@ npm run dev:ssl
 先构建项目，然后启动：
 
 ```bash
-npm run build
-npm run serve
+npm run server
 ```
 
 或直接运行（自动构建并启动）：
@@ -73,26 +70,16 @@ npm run serve
 npm start
 ```
 
-`npm run serve` 会同时启动：
-- 游戏界面（生产构建）：`http://localhost:8089`
-- WebSocket 多人联机服务器：`ws://localhost:8080`
+`npm run server` 会自动构建并启动：
+- 游戏界面 + REST API + WebSocket（同一端口）：`http://localhost:8089`
 
 **生产模式（HTTPS/WSS）：**
 
 ```bash
-npm run serve:ssl
+npm run server:ssl
 ```
 
-### 单独启动 WebSocket 服务器
-
-如只需启动 WebSocket 服务器：
-
-```bash
-npm run server          # WS (ws://localhost:8080)
-npm run server:ssl      # WSS (wss://localhost:8443)
-```
-
-此命令会在端口 8080（WS）或 8443（WSS）启动 WebSocket 服务器，用于房间管理和玩家连接。
+此命令会在端口 8089 启动 HTTPS + WSS 服务器。
 
 ---
 

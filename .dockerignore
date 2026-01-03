@@ -1,6 +1,62 @@
+# Dependencies
 node_modules
-dist
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs (dist is needed in builder stage but excluded for context)
 output
+*.log
+
+# Git
 .git
+.gitignore
+
+# Docker files
 Dockerfile
 .dockerignore
+docker-compose.yml
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+.nyc_output/
+test/
+tests/
+*.test.js
+*.spec.js
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# SSL certificates (can be generated or mounted separately)
+# ssl/
+
+# Local development files
+*.local.js
+*.local.ts
+.eslintcache
+
+# Documentation (to reduce image size)
+# docs/
+README.md
+LICENSE
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md

@@ -1883,7 +1883,7 @@ export class Get {
 	}
 	trimip(str) {
 		var len = str.length - 5;
-		if (str.lastIndexOf(":8080") == len) {
+		if (str.lastIndexOf(`:${location.port}`) == len) {
 			str = str.slice(0, len);
 		}
 		return str;

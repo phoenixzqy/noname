@@ -18,9 +18,20 @@ FROM node:lts-alpine AS runner
 
 WORKDIR /app
 
+# 复制构建产物（dist 包含所有打包后的代码）
 COPY --from=builder /app/dist ./
 
-EXPOSE 8080
+# 暴露端口（HTTP/HTTPS + WebSocket 共用同一端口）
 EXPOSE 8089
 
-CMD ["node", "noname-server.cjs"]
+# 使用非 root 用户运行
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+RUN chown -R nodejs:nodejs /app
+USER nodejs
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:8089/', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); })"
+
+# 使用 ENTRYPOINT 启动服务器
+ENTRYPOINT ["node", "noname-server.cjs", "--server"]
