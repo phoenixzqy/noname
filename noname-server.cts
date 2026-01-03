@@ -87,7 +87,7 @@ const defaultConfig = {
 	https: false,
 	server: false,
 	maxAge: oneYear,
-	port: 8089,
+	port: 8088,
 	debug: false,
 	dirname: cwd(),
 };

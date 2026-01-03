@@ -2,8 +2,8 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 
 const port = {
-	client: 8080,
-	server: 8089,
+	client: 8089,
+	server: 8088,
 };
 
 export default defineConfig({

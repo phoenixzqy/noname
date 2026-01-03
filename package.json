@@ -11,8 +11,9 @@
     "type": "module",
     "scripts": {
         "start": "npm run build:full && npm run serve",
-        "dev": "concurrently \"tsx noname-server.cts --debug\" \"npm run vite -- dev --open\"",
-        "serve": "cd dist && node noname-server.cjs",
+        "dev": "concurrently \"tsx noname-server.cts --debug\" \"npm run vite -- dev --open\" \"npm run server\"",
+        "serve": "concurrently \"cd dist && node noname-server.cjs\" \"npm run server\"",
+        "server": "node scripts/server.cjs",
         "build": "tsx scripts/build.ts",
         "build:types": "tsc -p tsconfig.types.json",
         "build:full": "tsx scripts/build.ts --mode full",

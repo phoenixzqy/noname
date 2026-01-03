@@ -44,7 +44,10 @@ npm install
   npm run dev
   ```
   
-  使用vite服务器开发。浏览器会自动打开，占用本地的8080端口和8089端口。
+  此命令会同时启动：
+  - 游戏界面（Vite 开发服务器）：`http://localhost:8089`（浏览器会自动打开）
+  - WebSocket 多人联机服务器：`ws://localhost:8080`
+  - 文件服务器：端口 8088
 
 - ### 构建项目
 
@@ -92,7 +95,9 @@ npm install
   npm run serve
   ```
   
-  浏览器会自动打开，占用本地的8080端口。
+  此命令会同时启动：
+  - 游戏界面（生产构建）：`http://localhost:8089`
+  - WebSocket 多人联机服务器：`ws://localhost:8080`
 
 - ### 语法检查
 
