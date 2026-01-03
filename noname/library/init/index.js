@@ -135,7 +135,21 @@ export class LibInit {
 		ws.on("message", function (messagestr) {
 			var message;
 			try {
-				message = JSON.parse(messagestr);
+				// Handle case where messagestr is already parsed as object (some WebSocket implementations)
+				if (typeof messagestr === "object" && messagestr !== null) {
+					// If it's a serialized Buffer object (from JSON), convert to string
+					if (messagestr.type === "Buffer" && Array.isArray(messagestr.data)) {
+						messagestr = String.fromCharCode.apply(null, messagestr.data);
+						message = JSON.parse(messagestr);
+					} else if (typeof ArrayBuffer !== "undefined" && messagestr instanceof ArrayBuffer) {
+						messagestr = new TextDecoder().decode(messagestr);
+						message = JSON.parse(messagestr);
+					} else {
+						message = messagestr;
+					}
+				} else {
+					message = JSON.parse(messagestr);
+				}
 				if (!Array.isArray(message) || typeof lib.message.server[message[0]] !== "function") {
 					throw "err";
 				}
