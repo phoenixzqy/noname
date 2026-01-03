@@ -3,7 +3,49 @@
 
 (function () {
 	var WebSocketServer = require("ws").Server;
-	var wss = new WebSocketServer({ port: 8080 });
+	var https = require("https");
+	var fs = require("fs");
+	var path = require("path");
+
+	// Configuration
+	var WS_PORT = 8080;
+	var WSS_PORT = 8443;
+	var USE_SSL = process.env.USE_SSL === "true" || process.argv.includes("--ssl");
+	var SSL_CERT_PATH = process.env.SSL_CERT || path.join(__dirname, "..", "ssl", "cert.pem");
+	var SSL_KEY_PATH = process.env.SSL_KEY || path.join(__dirname, "..", "ssl", "key.pem");
+
+	var wss;
+
+	if (USE_SSL) {
+		// Check if SSL certificates exist
+		if (!fs.existsSync(SSL_CERT_PATH) || !fs.existsSync(SSL_KEY_PATH)) {
+			console.error("[WSS] SSL certificates not found!");
+			console.error("[WSS] Expected cert at:", SSL_CERT_PATH);
+			console.error("[WSS] Expected key at:", SSL_KEY_PATH);
+			console.error("[WSS] To generate self-signed certificates for development, run:");
+			console.error("  mkdir -p ssl && openssl req -x509 -newkey rsa:4096 -keyout ssl/key.pem -out ssl/cert.pem -days 365 -nodes -subj '/CN=localhost'");
+			console.error("[WSS] Falling back to WS (insecure)...");
+			wss = new WebSocketServer({ port: WS_PORT });
+			console.log("[WS] WebSocket server running on ws://localhost:" + WS_PORT);
+		} else {
+			// Create HTTPS server with SSL
+			var httpsServer = https.createServer({
+				cert: fs.readFileSync(SSL_CERT_PATH),
+				key: fs.readFileSync(SSL_KEY_PATH)
+			});
+			wss = new WebSocketServer({ server: httpsServer });
+			httpsServer.on('error', function (err) {
+				console.error("[WSS] Server error:", err.message);
+			});
+			httpsServer.listen(WSS_PORT, "0.0.0.0", function () {
+				console.log("[WSS] Secure WebSocket server running on wss://127.0.0.1:" + WSS_PORT);
+			});
+		}
+	} else {
+		wss = new WebSocketServer({ port: WS_PORT });
+		console.log("[WS] WebSocket server running on ws://localhost:" + WS_PORT);
+	}
+
 	var bannedKeys = [];
 	var bannedIps = [];
 

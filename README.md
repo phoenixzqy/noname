@@ -37,6 +37,27 @@ npm run dev
 - WebSocket 多人联机服务器：`ws://localhost:8080`
 - 文件服务器：端口 8088
 
+**开发模式（HTTPS/WSS）：**
+
+首先生成 SSL 证书：
+
+```bash
+npm run ssl:generate
+```
+
+然后启动带 SSL 的开发服务器：
+
+```bash
+npm run dev:ssl
+```
+
+此命令会同时启动：
+- 游戏界面（HTTPS）：`https://localhost:8089`
+- WebSocket 安全服务器：`wss://localhost:8443`
+- 文件服务器：端口 8088
+
+> **注意**：自签名证书会触发浏览器安全警告，开发时可选择"继续访问"。
+
 **生产模式：**
 
 先构建项目，然后启动：
@@ -56,15 +77,22 @@ npm start
 - 游戏界面（生产构建）：`http://localhost:8089`
 - WebSocket 多人联机服务器：`ws://localhost:8080`
 
+**生产模式（HTTPS/WSS）：**
+
+```bash
+npm run serve:ssl
+```
+
 ### 单独启动 WebSocket 服务器
 
 如只需启动 WebSocket 服务器：
 
 ```bash
-npm run server
+npm run server          # WS (ws://localhost:8080)
+npm run server:ssl      # WSS (wss://localhost:8443)
 ```
 
-此命令会在端口 8080 启动 WebSocket 服务器，用于房间管理和玩家连接。
+此命令会在端口 8080（WS）或 8443（WSS）启动 WebSocket 服务器，用于房间管理和玩家连接。
 
 ---
 

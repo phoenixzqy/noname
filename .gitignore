@@ -18,6 +18,9 @@ node_modules
 package-lock.json
 .turbo
 
+# SSL certificates (for local development)
+ssl/
+
 # IDE
 .idea
 .vscode
