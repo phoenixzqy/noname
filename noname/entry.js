@@ -6,8 +6,40 @@ import "../jit/index.js";
 // 保证打包时存在(importmap)
 import "vue/dist/vue.esm-browser.js";
 
+// PWA Service Worker Registration
+async function registerPWA() {
+	if (!('serviceWorker' in navigator)) {
+		console.log('[PWA] Service workers are not supported');
+		return;
+	}
+	
+	try {
+		const registration = await navigator.serviceWorker.register('/pwa-sw.js', {
+			scope: '/'
+		});
+		console.log('[PWA] Service Worker registered with scope:', registration.scope);
+		
+		// Check for updates
+		registration.addEventListener('updatefound', () => {
+			const newWorker = registration.installing;
+			if (newWorker) {
+				newWorker.addEventListener('statechange', () => {
+					if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+						console.log('[PWA] New version available');
+					}
+				});
+			}
+		});
+	} catch (error) {
+		console.error('[PWA] Service Worker registration failed:', error);
+	}
+}
+
 (async () => {
 	try {
+		// Register PWA Service Worker
+		registerPWA();
+		
 		window["bannedExtensions"] = [
 			"\u4fa0\u4e49",
 			"\u5168\u6559\u7a0b",
