@@ -35,7 +35,7 @@ npm run dev
 此命令会同时启动：
 - 游戏界面（Vite 开发服务器）：`http://localhost:8089`
 - WebSocket 多人联机服务器：`ws://localhost:8080`
-- 文件服务器：端口 8088
+- 文件服务器：端口 8089
 
 **开发模式（HTTPS/WSS）：**
 
@@ -54,7 +54,7 @@ npm run dev:ssl
 此命令会同时启动：
 - 游戏界面（HTTPS）：`https://localhost:8089`
 - WebSocket 安全服务器：`wss://localhost:8443`
-- 文件服务器：端口 8088
+- 文件服务器：端口 8089
 
 > **注意**：自签名证书会触发浏览器安全警告，开发时可选择"继续访问"。
 

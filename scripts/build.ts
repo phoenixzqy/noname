@@ -30,7 +30,9 @@ const staticModules: Target[] = [
 	{ src: "LICENSE", dest: "" },
 	{ src: "README.md", dest: "" },
 	{ src: ".nomedia", dest: "" },
-	// step 无法编译，需要覆盖
+	{ src: "pwa-icons/**", dest: "pwa-icons" },
+	{ src: "manifest.webmanifest", dest: "" },
+	{ src: "pwa-sw.js", dest: "" },	// step 无法编译，需要覆盖
 	// 重构之后请删除
 	{ src: "noname/get/pinyins/index.js", dest: "noname/get/pinyins" },
 	{ src: "noname/library/element/content.js", dest: "noname/library/element" },

@@ -14,7 +14,7 @@
         "dev": "concurrently \"tsx noname-server.cts --debug\" \"npm run vite -- dev --open\" \"npm run server\"",
         "dev:ssl": "concurrently \"tsx noname-server.cts --debug\" \"USE_SSL=true npm run vite -- dev --open\" \"npm run server:ssl\"",
         "serve": "concurrently \"cd dist && node noname-server.cjs\" \"npm run server\"",
-        "serve:ssl": "concurrently \"cd dist && node noname-server.cjs\" \"npm run server:ssl\"",
+        "serve:ssl": "concurrently \"cd dist && node noname-server.cjs --https --port 8089 --sslDir ../ssl\" \"npm run server:ssl\"",
         "server": "node scripts/server.cjs",
         "server:ssl": "USE_SSL=true node scripts/server.cjs",
         "ssl:generate": "mkdir -p ssl && openssl req -x509 -newkey rsa:4096 -keyout ssl/key.pem -out ssl/cert.pem -days 365 -nodes -subj '/CN=localhost'",

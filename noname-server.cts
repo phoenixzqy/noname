@@ -1,6 +1,7 @@
 import minimist from "minimist";
 import express from "express";
 import bodyParser from "body-parser";
+import https from "https";
 import fs from "fs";
 import path from "path";
 import { cwd } from "process";
@@ -87,9 +88,10 @@ const defaultConfig = {
 	https: false,
 	server: false,
 	maxAge: oneYear,
-	port: 8088,
+	port: 8089,
 	debug: false,
 	dirname: cwd(),
+	sslDir: undefined,
 };
 export default function createApp(config = defaultConfig) {
 	if (config.debug) {
@@ -297,25 +299,34 @@ export default function createApp(config = defaultConfig) {
 	});
 
 	const callback = () => {
-		console.log(`应用正在使用 ${config.port} 端口以提供无名杀本地服务器功能!`);
+		console.log(`应用正在使用 ${config.port} 端口以提供无名杀本地服务器功能!如果是本地服务器，请访问 ${config.https ? "https" : "http"}://127.0.0.1:${config.port}`);
 		if (!config.server && !config.debug) {
-			exec(`start ${config.https ? "https" : "http"}://localhost:${config.port}/`);
+			exec(`start ${config.https ? "https" : "http"}://127.0.0.1:${config.port}/`);
 		}
 	};
-	// if (config.https) {
-	// 	const SSLOptions = {
-	// 		key: fs.readFileSync(path.join(config.dirname, "localhost.decrypted.key")),
-	// 		cert: fs.readFileSync(path.join(config.dirname, "localhost.crt")),
-	// 	};
-	// 	const httpsServer = https.createServer(SSLOptions, app);
-	// 	// 会提示NET::ERR_CERT_AUTHORITY_INVALID
-	// 	// 但浏览器还是可以访问的
-	// 	// todo: 解决sw注册问题
-	// 	httpsServer.listen(config.port, callback);
-	// } else {
-	// 	app.listen(config.port, callback);
-	// }
-	app.listen(config.port, callback);
+	if (config.https) {
+		// Use provided sslDir or default to dirname/ssl
+		const sslDir = config.sslDir || path.join(config.dirname, "ssl");
+		const sslCertPath = path.join(sslDir, "cert.pem");
+		const sslKeyPath = path.join(sslDir, "key.pem");
+		if (!fs.existsSync(sslCertPath) || !fs.existsSync(sslKeyPath)) {
+			console.error("[HTTPS] SSL certificates not found!");
+			console.error("[HTTPS] Expected cert at:", sslCertPath);
+			console.error("[HTTPS] Expected key at:", sslKeyPath);
+			console.error("[HTTPS] To generate certificates, run: npm run ssl:generate");
+			process.exit(1);
+		}
+		const SSLOptions = {
+			key: fs.readFileSync(sslKeyPath),
+			cert: fs.readFileSync(sslCertPath),
+		};
+		const httpsServer = https.createServer(SSLOptions, app);
+		// 会提示NET::ERR_CERT_AUTHORITY_INVALID
+		// 但浏览器还是可以访问的
+		httpsServer.listen(config.port, callback);
+	} else {
+		app.listen(config.port, callback);
+	}
 	return app;
 }
 
@@ -324,7 +335,8 @@ if (require.main === module) {
 	// 示例: -s --maxAge 100
 	createApp(
 		minimist(process.argv.slice(2), {
-			boolean: true,
+			boolean: ["https", "server", "debug"],
+			string: ["sslDir"],
 			alias: { server: "s" },
 			default: defaultConfig,
 		}) as any

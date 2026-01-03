@@ -1,9 +1,11 @@
 /// <reference types="vite/client" />
+import { allowServiceWorker } from "./canUse.js";
 export {};
+
 (async function () {
 	const scope = new URL("./", location.href).toString();
 	if (import.meta.env.DEV) {
-		if ("serviceWorker" in navigator) {
+		if (allowServiceWorker()) {
 			let registrations = await navigator.serviceWorker.getRegistrations();
 			await registrations.find(registration => registration?.active?.scriptURL == `${scope}service-worker.js`)?.unregister();
 		}
@@ -15,8 +17,8 @@ export {};
 		SERVICE_WORKER_LOAD_FAILED: ["无法启用即时编译功能", "serviceWorker加载失败"].join("\n"),
 	};
 
-	if (!("serviceWorker" in navigator)) {
-		alert(globalText.SERVICE_WORKER_NOT_SUPPORT);
+	if (!allowServiceWorker()) {
+		console.warn(globalText.SERVICE_WORKER_NOT_SUPPORT);
 		return;
 	}
 
@@ -52,7 +54,7 @@ export {};
 	} catch (e) {
 		if (sessionStorage.getItem("canUseTs") === "false") {
 			console.log("serviceWorker加载失败: ", e);
-			alert(globalText.SERVICE_WORKER_LOAD_FAILED);
+			console.warn(globalText.SERVICE_WORKER_LOAD_FAILED);
 		} else {
 			sessionStorage.setItem("canUseTs", "false");
 			window.location.reload();

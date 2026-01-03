@@ -6,9 +6,13 @@ import "../jit/index.js";
 // 保证打包时存在(importmap)
 import "vue/dist/vue.esm-browser.js";
 
+function allowServiceWorker() {
+	return import.meta.env.PROD && "serviceWorker" in navigator && location.protocol === "https:";
+}
+
 // PWA Service Worker Registration
 async function registerPWA() {
-	if (!('serviceWorker' in navigator)) {
+	if (!allowServiceWorker()) {
 		console.log('[PWA] Service workers are not supported');
 		return;
 	}
