@@ -15,7 +15,6 @@ dist
 dist-types
 output
 node_modules
-package-lock.json
 .turbo
 
 # SSL certificates (for local development)
