@@ -6680,12 +6680,19 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 					game.playAudio("effect", "tie");
 				}
 			}
-			if (!ui.exit) {
-				ui.create.exit();
-			}
 			if (ui.giveup) {
 				ui.giveup.remove();
 				delete ui.giveup;
+			}
+			// Guest buttons: "返回房间" to rejoin room, "退出房间" to exit to lobby
+			if (!ui.returnToRoom && typeof game.roomId == "string") {
+				ui.returnToRoom = ui.create.control("返回房间", function () {
+					game.saveConfig("tmp_user_roomId", game.roomId);
+					setTimeout(game.reload, 100);
+				});
+			}
+			if (!ui.exit) {
+				ui.create.exit();
 			}
 			if (game.servermode) {
 				ui.exit.firstChild.innerHTML = "返回房间";
@@ -7252,16 +7259,20 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 		}
 		if (!ui.restart) {
 			if (game.onlineroom && typeof game.roomId == "string") {
-				ui.restart = ui.create.control("restart", function () {
-					game.broadcastAll(function () {
-						if (ui.exit) {
-							ui.exit.stay = true;
-							ui.exit.firstChild.innerHTML = "返回房间";
-						}
-					});
+				// Host: "重新开始" returns to waiting room, "退出房间" dismisses the room
+				ui.restart = ui.create.control("重新开始", function () {
+					// Notify all guests to return to the room
+					game.broadcast("restartGame");
+					// Reset game state
+					lib.configOL.gameStarted = false;
+					// Host reloads and rejoins as owner
 					game.saveConfig("tmp_owner_roomId", game.roomId);
 					setTimeout(game.reload, 100);
 				});
+				// Add exit button for host to dismiss room
+				if (!ui.exit) {
+					ui.create.exit();
+				}
 			} else {
 				ui.restart = ui.create.control("restart", game.reload);
 			}
@@ -7290,7 +7301,20 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 			game.saveConfig("pagecfg" + window.isNonameServer, [lib.configOL, game.roomId, _status.onlinenickname, _status.onlineavatar]);
 			game.reload();
 		} else if (_status.connectMode && !game.online) {
-			setTimeout(game.reload, 15000);
+			// Auto-restart after 15 seconds (same behavior as clicking "重新开始")
+			setTimeout(function () {
+				if (_status.over && game.onlineroom && typeof game.roomId == "string") {
+					// Notify all guests to return to the room
+					game.broadcast("restartGame");
+					// Reset game state
+					lib.configOL.gameStarted = false;
+					// Host reloads and rejoins as owner
+					game.saveConfig("tmp_owner_roomId", game.roomId);
+					game.reload();
+				} else {
+					game.reload();
+				}
+			}, 15000);
 		}
 	}
 	/**

@@ -12170,6 +12170,24 @@ export class Library {
 			},
 			/**
 			 * @this {import("./element/client.js").Client}
+			 * Host requests to restart the game, keeping all players in the room
+			 */
+			restartGame() {
+				if (this.id == game.onlinezhu && _status.over) {
+					// Reset game state
+					lib.configOL.gameStarted = false;
+					_status.over = false;
+					
+					// Broadcast restart to all clients
+					game.broadcast("restartGame");
+					
+					// Reload the host's game to return to waiting room
+					game.saveConfig("tmp_owner_roomId", game.roomId);
+					setTimeout(game.reload, 100);
+				}
+			},
+			/**
+			 * @this {import("./element/client.js").Client}
 			 */
 			changeRoomConfig(config) {
 				if (this.id == game.onlinezhu) {
@@ -12477,6 +12495,18 @@ export class Library {
 				}
 				game.ws.close();
 			},
+			/**
+			 * Client receives restart signal from host - reload to rejoin the same room
+			 */
+			restartGame: function () {
+				if (game.online && _status.over) {
+					// Show brief notification
+					game.alert("房主重新开始游戏，正在重新加入房间...");
+					// Save room ID so we rejoin the same room after reload
+					game.saveConfig("tmp_user_roomId", game.roomId);
+					setTimeout(game.reload, 500);
+				}
+			},
 			reloadroom: function (forced) {
 				if (window.isNonameServer && (forced || !_status.protectingroom)) {
 					game.reload();
@@ -12712,12 +12742,14 @@ export class Library {
 								ui.window.removeChild(input);
 								if (result || input.value.length > 0) {
 									read(input.value);
-								} else if (confirm("是否输入邀请链接以加入房间？")) {
-									var text = prompt("请输入邀请链接");
-									if (typeof text == "string" && text.length > 0) {
-										read(text);
-									}
-								}
+								} 
+								// NOTE: disable join room with invite link feature
+								// else if (confirm("是否输入邀请链接以加入房间？")) {
+								// 	var text = prompt("请输入邀请链接");
+								// 	if (typeof text == "string" && text.length > 0) {
+								// 		read(text);
+								// 	}
+								// }
 							}
 						}
 					}

@@ -191,13 +191,15 @@ export default () => {
 						ui.window.removeChild(input);
 						if (result || input.value.length > 0) {
 							read(input.value);
-						} else if (confirm("是否输入邀请链接以进入联机地址和房间？")) {
-							ced = true;
-							var text = prompt("请输入邀请链接");
-							if (typeof text == "string" && text.length > 0) {
-								read(text);
-							}
-						}
+						} 
+						// NOTE: disable join room with invite link feature
+						// else if (confirm("是否输入邀请链接以进入联机地址和房间？")) {
+						// 	ced = true;
+						// 	var text = prompt("请输入邀请链接");
+						// 	if (typeof text == "string" && text.length > 0) {
+						// 		read(text);
+						// 	}
+						// }
 					}
 				}
 				lib.init.onfree();
@@ -206,6 +208,31 @@ export default () => {
 				game.connect(window.isNonameServerIp || "localhost");
 			} else {
 				createNode();
+				// Auto-connect if we have a saved room to rejoin
+				if (lib.config.tmp_owner_roomId || lib.config.tmp_user_roomId) {
+					var ip = lib.config.last_ip || lib.hallURL;
+					event.textnode.textContent = "正在重新连接...";
+					game.requireSandboxOn(ip);
+					game.connect(ip, function (success) {
+						if (success) {
+							var info = lib.config.reconnect_info;
+							if (info && info[0] == _status.ip) {
+								game.onlineID = info[1];
+								if (typeof (game.roomId = info[2]) == "string") {
+									game.roomIdServer = true;
+								}
+							}
+							return;
+						}
+						if (event.textnode) {
+							alert("重新连接失败");
+							event.textnode.textContent = "输入联机地址";
+							// Clear the saved room IDs since reconnection failed
+							game.saveConfig("tmp_owner_roomId");
+							game.saveConfig("tmp_user_roomId");
+						}
+					});
+				}
 			}
 			if (!game.onlineKey) {
 				game.onlineKey = localStorage.getItem(lib.configprefix + "key");
