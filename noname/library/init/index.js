@@ -137,12 +137,14 @@ export class LibInit {
 			try {
 				// Handle case where messagestr is already parsed as object (some WebSocket implementations)
 				if (typeof messagestr === "object" && messagestr !== null) {
-					// If it's a serialized Buffer object (from JSON), convert to string
+					// If it's a serialized Buffer object (from JSON), convert to string using proper UTF-8 decoding
 					if (messagestr.type === "Buffer" && Array.isArray(messagestr.data)) {
-						messagestr = String.fromCharCode.apply(null, messagestr.data);
+						// Use TextDecoder for proper UTF-8 handling of multi-byte characters
+						var uint8Array = new Uint8Array(messagestr.data);
+						messagestr = new TextDecoder("utf-8").decode(uint8Array);
 						message = JSON.parse(messagestr);
 					} else if (typeof ArrayBuffer !== "undefined" && messagestr instanceof ArrayBuffer) {
-						messagestr = new TextDecoder().decode(messagestr);
+						messagestr = new TextDecoder("utf-8").decode(messagestr);
 						message = JSON.parse(messagestr);
 					} else {
 						message = messagestr;
