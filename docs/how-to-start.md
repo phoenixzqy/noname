@@ -16,18 +16,14 @@
    npm -v
    ```
 
-### pnpm (>=8)
+### npm
 
-在命令行输入：
-
-```bash
-npm install -g pnpm
-```
+npm 已随 Node.js 一起安装，无需额外安装。
 
 验证（输出版本号）：
 
 ```bash
-pnpm -v
+npm -v
 ```
 
 ## 二、安装依赖
@@ -35,7 +31,7 @@ pnpm -v
 在项目根目录执行：
 
 ```bash
-pnpm install
+npm install
 ```
 
 ## 三、启动项目
@@ -45,7 +41,7 @@ pnpm install
   执行：
   
   ```bash
-  pnpm dev
+  npm run dev
   ```
   
   使用vite服务器开发。浏览器会自动打开，占用本地的8080端口和8089端口。
@@ -55,19 +51,19 @@ pnpm install
   - 打包代码（只包含运行时必要的代码）：
   
     ```bash
-    pnpm build
+    npm run build
     ```
   
   - 打包离线包（包含完整源代码以及这个版本更新的素材）：
   
     ```bash
-    pnpm build:diff
+    npm run build:diff
     ```
   
   - 打包完整包（包含完整源代码、所有素材和所有内置扩展）：
   
     ```bash
-    pnpm build:full
+    npm run build:full
     ```
 
   打包结果会输出到`dist/`文件夹，可以复制到启动器（如electron）中打开。
@@ -77,7 +73,7 @@ pnpm install
   > 如果需要自动打包成zip，请在命令之后增加`--zip`，如：
   >
   > ```bash
-  > pnpm build:diff --zip
+  > npm run build:diff -- --zip
   > ```
   >
   > 这会在打包完成后额外在项目根目录输出结果的压缩包。
@@ -87,13 +83,13 @@ pnpm install
   执行：
   
   ```bash
-  pnpm start
+  npm start
   ```
 
   或在构建完项目后执行：
 
   ```bash
-  pnpm serve
+  npm run serve
   ```
   
   浏览器会自动打开，占用本地的8080端口。
@@ -103,7 +99,7 @@ pnpm install
   执行：
   
   ```bash
-  pnpm lint
+  npm run lint
   ```
   
   进行eslint检查，如果没有任何输出即可提交，否则请检查提示位置。

@@ -65,7 +65,7 @@
 >
 > - 开发环境为`PR-Branch`分支，使用vite以及浏览器开发，在PC端运行
 > - 生产环境为`build-tooling`分支、发布的完整包以及测试包，直接进入启动器文件夹覆盖
-> - 使用`pnpm build`可以将开发环境打包为生产环境，结果将输出在`dist/`文件夹下
+> - 使用`npm run build`可以将开发环境打包为生产环境，结果将输出在`dist/`文件夹下
 > - 开发本体代码或涉及更改本体功能的扩展（例如美化）建议使用开发环境
 > - 开发武将扩展可以使用生产环境，需要阅读源码请进入`src/`文件夹查看
 
@@ -73,26 +73,26 @@
     > **提示：** 请参考`docs/how-to-start.md`或[github文档](https://github.com/libnoname/noname/wiki/%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C%E6%97%A0%E5%90%8D%E6%9D%80%EF%BC%88%E7%A8%8B%E5%BA%8F%E5%91%98%E7%89%88%EF%BC%89) 配置环境。
 
     - [Node.js](https://nodejs.org/) ^20.19.0 || >=22.12.0
-    - [pnpm](https://pnpm.io/) >= 9
+    - [npm](https://www.npmjs.com/) (comes with Node.js)
 
 2. 下载[PR-Branch](https://github.com/libnoname/noname/tree/PR-Branch)
 
 3. 安装依赖
 
     ```bash
-    pnpm install
+    npm install
     ```
 
 4. 启动
 
     ```bash
-    pnpm dev
+    npm run dev
     ```
 
 5. 构建
 
     ```bash
-    pnpm build
+    npm run build
     ```
 
 ### OL单骑无双·战法
