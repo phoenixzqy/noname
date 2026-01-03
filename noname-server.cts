@@ -90,7 +90,7 @@ const defaultConfig = {
 	https: false,
 	server: false,
 	maxAge: oneYear,
-	port: 8089,
+	port: process.env.PORT ? parseInt(process.env.PORT) : 8089,
 	debug: false,
 	dirname: cwd(),
 	sslDir: undefined,

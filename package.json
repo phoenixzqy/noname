@@ -14,6 +14,7 @@
         "dev": "concurrently \"tsx noname-server.cts --debug --port 8088\" \"npm run vite -- dev --open\"",
         "dev:ssl": "concurrently \"tsx noname-server.cts --debug --port 8088 --https --sslDir ssl\" \"USE_SSL=true npm run vite -- dev --open\"",
         "server": "npm run build:full && cd dist && node noname-server.cjs --server",
+        "server:azure:prod": "npm run build:full && cd dist && node noname-server.cjs --server",
         "server:ssl": "npm run build:full && cd dist && node noname-server.cjs --https --sslDir ../ssl --server",
         "ssl:generate": "mkdir -p ssl && openssl req -x509 -newkey rsa:4096 -keyout ssl/key.pem -out ssl/cert.pem -days 365 -nodes -subj '/CN=localhost'",
         "build": "tsx scripts/build.ts",
