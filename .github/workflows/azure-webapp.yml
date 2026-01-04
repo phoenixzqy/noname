@@ -35,8 +35,9 @@ jobs:
           cp -r dist/* deploy/dist/
           
       - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v2
+        uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME }}  # Set this in your GitHub repository secrets
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}  # Set this in your GitHub repository secrets
           package: ./deploy
+          clean: true
