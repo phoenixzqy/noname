@@ -7301,7 +7301,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 			game.saveConfig("pagecfg" + window.isNonameServer, [lib.configOL, game.roomId, _status.onlinenickname, _status.onlineavatar]);
 			game.reload();
 		} else if (_status.connectMode && !game.online) {
-			// Auto-restart after 15 seconds (same behavior as clicking "重新开始")
+			// Auto-restart after 2 minutes (same behavior as clicking "重新开始")
 			setTimeout(function () {
 				if (_status.over && game.onlineroom && typeof game.roomId == "string") {
 					// Notify all guests to return to the room
@@ -7314,7 +7314,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 				} else {
 					game.reload();
 				}
-			}, 15000);
+			}, 120000);
 		}
 	}
 	/**

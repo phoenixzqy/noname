@@ -50,7 +50,8 @@ export default () => {
 				node.style.top = "calc(50% - 20px)";
 				node.style.whiteSpace = "nowrap";
 				node.textContent = lib.config.last_ip || lib.hallURL;
-				node.contentEditable = true;
+				// disable WS address editing because we always use default address now
+				// node.contentEditable = true;
 				node.style.webkitUserSelect = "text";
 				node.style.textAlign = "center";
 				node.style.overflow = "hidden";
@@ -81,6 +82,7 @@ export default () => {
 						}
 					});
 				};
+
 				node.addEventListener("keydown", function (e) {
 					if (e.code == "Enter") {
 						connect(e);
