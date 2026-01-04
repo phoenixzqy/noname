@@ -157,6 +157,13 @@ self.addEventListener('fetch', (event: FetchEvent) => {
 		return;
 	}
 
+	// Skip JIT service worker paths - let JIT SW handle these
+	const jitPaths = ['/extension', '/jit'];
+	if (jitPaths.some(path => url.pathname.startsWith(path))) {
+		console.log('[PWA SW] Skipping JIT path:', url.pathname);
+		return;
+	}
+
 	// Skip cross-origin requests (except for CDN resources)
 	if (url.origin !== self.location.origin) {
 		// Allow caching for known CDN resources

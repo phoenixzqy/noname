@@ -3,16 +3,18 @@ const worker = globalThis as unknown as ServiceWorkerGlobalScope;
 import * as CompileStrategy from "./compile-strategy";
 
 worker.addEventListener("install", event => {
+	console.log('[JIT SW] Installing...');
 	// The promise that skipWaiting() returns can be safely ignored.
 	worker.skipWaiting();
 });
 
 worker.addEventListener("activate", event => {
+	console.log('[JIT SW] Activating...');
 	// 当一个 service worker 被初始注册时，页面在下次加载之前不会使用它。 claim() 方法会立即控制这些页面
 	// event.waitUntil(worker.clients.claim());
 	event.waitUntil(
 		worker.clients.claim().then(() => {
-			console.log("service worker加载完成，重启页面");
+			console.log("[JIT SW] Service worker加载完成，重启页面");
 			sendReload();
 		})
 	);
@@ -56,12 +58,15 @@ worker.addEventListener("fetch", (event: FetchEvent) => {
 	if (!["localhost", "127.0.0.1", "10.0.2.2"].includes(url.hostname)) return;
 	if (!proxyedPath.some(i => url.pathname.startsWith(i))) return;
 
+	console.log('[JIT SW] Handling request:', url.pathname);
+	
 	const strategy = strategies.find(s => s.match({ event, request, url }));
 	if (strategy) {
 		try {
+			console.log('[JIT SW] Using strategy:', strategy.constructor.name);
 			event.respondWith(strategy.process({ event, request, url }));
 		} catch (e) {
-			console.error(request.url, e);
+			console.error('[JIT SW] Strategy processing failed for', request.url, e);
 			event.respondWith(Response.error());
 		}
 	}

@@ -7,7 +7,12 @@ export {};
 	if (import.meta.env.DEV) {
 		if (allowServiceWorker()) {
 			let registrations = await navigator.serviceWorker.getRegistrations();
-			await registrations.find(registration => registration?.active?.scriptURL == `${scope}service-worker.js`)?.unregister();
+			// Only unregister the JIT service worker, not the PWA service worker
+			const jitWorker = registrations.find(registration => {
+				const scriptURL = registration?.active?.scriptURL;
+				return scriptURL && scriptURL.includes('service-worker.js') && !scriptURL.includes('pwa-sw.js');
+			});
+			await jitWorker?.unregister();
 		}
 		return;
 	}
@@ -25,21 +30,29 @@ export {};
 	// 初次加载worker，需要重新启动一次
 	if (sessionStorage.getItem("isJITReloaded") !== "true") {
 		let registrations = await navigator.serviceWorker.getRegistrations();
-		await registrations.find(registration => registration?.active?.scriptURL == `${scope}service-worker.js`)?.unregister();
+		// Only unregister the JIT service worker, not the PWA service worker
+		const jitWorker = registrations.find(registration => {
+			const scriptURL = registration?.active?.scriptURL;
+			return scriptURL && scriptURL.includes('service-worker.js') && !scriptURL.includes('pwa-sw.js');
+		});
+		await jitWorker?.unregister();
 		sessionStorage.setItem("isJITReloaded", "true");
 		window.location.reload();
 		return;
 	}
 
 	try {
+		console.log('[JIT] Registering JIT service worker...');
 		await navigator.serviceWorker.register(`${scope}service-worker.js`, {
 			type: "module",
 			updateViaCache: "all",
 			scope,
 		});
+		console.log('[JIT] Service worker registered successfully');
 		// 接收消息
 		navigator.serviceWorker.addEventListener("message", e => {
 			if (e.data?.type === "reload") {
+				console.log('[JIT] Reload message received, reloading page...');
 				window.location.reload();
 			}
 		});
