@@ -1,6 +1,7 @@
 import { lib, game } from "noname";
 import { boot } from "@/init/index.js";
 import { userAgentLowerCase, device } from "@/util/index.js";
+import { requestWakeLock, isPWAInstalled, isWakeLockSupported } from "@/util/pwa.js";
 import "core-js-bundle";
 import "../jit/index.js";
 // 保证打包时存在(importmap)
@@ -39,10 +40,32 @@ async function registerPWA() {
 	}
 }
 
+// Request Wake Lock to keep screen on during gameplay
+// This is especially important for PWA on iOS/Safari
+async function setupWakeLock() {
+	// Only enable wake lock if running as PWA or on mobile devices
+	const shouldEnableWakeLock = isPWAInstalled() || device === 'ios' || device === 'android';
+	
+	if (shouldEnableWakeLock) {
+		console.log('[PWA] Requesting wake lock for gameplay...');
+		const acquired = await requestWakeLock();
+		if (acquired) {
+			console.log('[PWA] Wake lock acquired - screen will stay on during gameplay');
+		} else if (isWakeLockSupported()) {
+			console.log('[PWA] Wake lock request failed, but API is supported');
+		} else {
+			console.log('[PWA] Wake lock API not supported, using fallback method');
+		}
+	}
+}
+
 (async () => {
 	try {
 		// Register PWA Service Worker
 		registerPWA();
+		
+		// Enable wake lock to keep screen on during gameplay
+		setupWakeLock();
 		
 		window["bannedExtensions"] = [
 			"\u4fa0\u4e49",

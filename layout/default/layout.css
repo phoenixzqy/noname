@@ -1806,7 +1806,7 @@ div.select-all:not(.card):not(.player) {
 }
 #window > .dialog.popped {
 	z-index: 5;
-	width: 220px;
+	width: min(500px, calc(100vw - 140px));
 	background: rgba(0, 0, 0, 0.2);
 	box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px;
 	border-radius: 6px;

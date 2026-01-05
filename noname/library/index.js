@@ -10612,13 +10612,37 @@ export class Library {
 		NodeWS: Element.NodeWS,
 		Character: Element.Character,
 		ws: {
+			// Reconnection settings for iOS/Safari compatibility
+			_reconnectAttempts: 0,
+			_maxReconnectAttempts: 5,
+			_reconnectDelay: 1000,
+			_lastHeartbeat: 0,
+			_heartbeatTimeout: null,
+			_isReconnecting: false,
+			
 			onopen: function () {
+				// Reset reconnection state on successful connection
+				lib.element.ws._reconnectAttempts = 0;
+				lib.element.ws._isReconnecting = false;
+				lib.element.ws._lastHeartbeat = Date.now();
+				
+				// Clear any pending heartbeat timeout
+				if (lib.element.ws._heartbeatTimeout) {
+					clearTimeout(lib.element.ws._heartbeatTimeout);
+					lib.element.ws._heartbeatTimeout = null;
+				}
+				
 				if (_status.connectCallback) {
 					_status.connectCallback(true);
 					delete _status.connectCallback;
 				}
+				
+				console.log('[WS] Connection established');
 			},
 			onmessage: function (messageevent) {
+				// Update last heartbeat time for connection health monitoring
+				lib.element.ws._lastHeartbeat = Date.now();
+				
 				if (messageevent.data == "heartbeat") {
 					this.send("heartbeat");
 					return;
@@ -10649,17 +10673,24 @@ export class Library {
 				lib.message.client[message.shift()].apply(null, message);
 			},
 			onerror: function (e) {
+				console.error('[WS] Connection error:', e);
 				if (this._nocallback) {
 					return;
 				}
 				if (_status.connectCallback) {
 					_status.connectCallback(false);
 					delete _status.connectCallback;
-				} else {
-					alert("连接失败");
+				} else if (!lib.element.ws._isReconnecting) {
+					// Don't show alert if we're going to attempt reconnection
+					const shouldReconnect = game.online && _status.ip && 
+						lib.element.ws._reconnectAttempts < lib.element.ws._maxReconnectAttempts;
+					if (!shouldReconnect) {
+						alert("连接失败");
+					}
 				}
 			},
 			onclose: function () {
+				console.log('[WS] Connection closed');
 				if (this._nocallback) {
 					return;
 				}
@@ -10667,6 +10698,41 @@ export class Library {
 					_status.connectCallback(false);
 					delete _status.connectCallback;
 				}
+				
+				// Attempt reconnection for unexpected disconnections during online play
+				// This helps with iOS/Safari which may drop connections when backgrounded
+				if ((game.online || game.onlineroom) && _status.ip && 
+					!lib.element.ws._isReconnecting &&
+					lib.element.ws._reconnectAttempts < lib.element.ws._maxReconnectAttempts) {
+					
+					lib.element.ws._isReconnecting = true;
+					lib.element.ws._reconnectAttempts++;
+					
+					const delay = lib.element.ws._reconnectDelay * lib.element.ws._reconnectAttempts;
+					console.log(`[WS] Attempting reconnection ${lib.element.ws._reconnectAttempts}/${lib.element.ws._maxReconnectAttempts} in ${delay}ms...`);
+					
+					setTimeout(() => {
+						if (_status.ip && (game.online || game.onlineroom)) {
+							try {
+								game.connect(_status.ip, (success) => {
+									if (success) {
+										console.log('[WS] Reconnection successful');
+										lib.element.ws._isReconnecting = false;
+									} else {
+										console.log('[WS] Reconnection failed, will retry if attempts remaining');
+										lib.element.ws._isReconnecting = false;
+										// The next onclose will trigger another attempt if available
+									}
+								});
+							} catch (e) {
+								console.error('[WS] Reconnection error:', e);
+								lib.element.ws._isReconnecting = false;
+							}
+						}
+					}, delay);
+					return; // Don't reload yet, wait for reconnection attempt
+				}
+				
 				if (game.online || game.onlineroom) {
 					if ((game.servermode || game.onlinehall) && _status.over) {
 						void 0;
@@ -12487,25 +12553,88 @@ export class Library {
 				}
 			},
 			selfclose: function () {
+				// Host has left the room - notify user and close connection
+				// Set flag to prevent reconnection attempts
+				if (game.ws) {
+					game.ws._nocallback = true;
+				}
+				
 				if (game.online || game.onlineroom) {
 					if ((game.servermode || game.onlinehall) && _status.over) {
 						// later
 					} else {
 						game.saveConfig("tmp_user_roomId");
 					}
+					
+					// Show notification to user that host has left
+					var closeOverlay = ui.create.div(".fullsize.connectlayer");
+					closeOverlay.style.zIndex = "100";
+					closeOverlay.style.background = "rgba(0, 0, 0, 0.7)";
+					closeOverlay.style.display = "flex";
+					closeOverlay.style.flexDirection = "column";
+					closeOverlay.style.justifyContent = "center";
+					closeOverlay.style.alignItems = "center";
+					document.body.appendChild(closeOverlay);
+					
+					var closeText = ui.create.div("", "房主已退出房间", closeOverlay);
+					closeText.style.color = "#fff";
+					closeText.style.fontSize = "20px";
+					closeText.style.textAlign = "center";
+					closeText.style.marginBottom = "10px";
+					
+					var subText = ui.create.div("", "即将返回大厅...", closeOverlay);
+					subText.style.color = "#aaa";
+					subText.style.fontSize = "16px";
 				}
-				game.ws.close();
+				
+				// Close WebSocket and reload after a short delay
+				if (game.ws) {
+					game.ws.close();
+				}
+				setTimeout(game.reload, 1500);
 			},
 			/**
 			 * Client receives restart signal from host - reload to rejoin the same room
 			 */
 			restartGame: function () {
 				if (game.online && _status.over) {
-					// Show brief notification
-					game.alert("房主重新开始游戏，正在重新加入房间...");
 					// Save room ID so we rejoin the same room after reload
 					game.saveConfig("tmp_user_roomId", game.roomId);
-					setTimeout(game.reload, 500);
+					
+					// Show waiting UI overlay to indicate waiting for host
+					var waitingOverlay = ui.create.div(".fullsize.connectlayer");
+					waitingOverlay.style.zIndex = "100";
+					waitingOverlay.style.background = "rgba(0, 0, 0, 0.7)";
+					waitingOverlay.style.display = "flex";
+					waitingOverlay.style.flexDirection = "column";
+					waitingOverlay.style.justifyContent = "center";
+					waitingOverlay.style.alignItems = "center";
+					document.body.appendChild(waitingOverlay);
+					
+					var waitingText = ui.create.div("", "房主正在重建房间，请稍候...", waitingOverlay);
+					waitingText.style.color = "#fff";
+					waitingText.style.fontSize = "20px";
+					waitingText.style.textAlign = "center";
+					waitingText.style.marginBottom = "10px";
+					
+					var countdownText = ui.create.div("", "3", waitingOverlay);
+					countdownText.style.color = "#aaa";
+					countdownText.style.fontSize = "16px";
+					
+					// Countdown from 3 seconds
+					var countdown = 3;
+					var countdownInterval = setInterval(function () {
+						countdown--;
+						if (countdown > 0) {
+							countdownText.innerHTML = countdown;
+						} else {
+							countdownText.innerHTML = "正在加入...";
+							clearInterval(countdownInterval);
+						}
+					}, 1000);
+					
+					// Delay 3 seconds to allow host to recreate the room
+					setTimeout(game.reload, 3000);
 				}
 			},
 			reloadroom: function (forced) {

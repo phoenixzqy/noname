@@ -445,19 +445,30 @@ function createWebSocketServer(server: http.Server | https.Server, isSecure: boo
 			ws.wsid
 		);
 		
+		// Heartbeat interval - reduced to 20 seconds for better iOS/Safari compatibility
+		// iOS Safari aggressively suspends WebSocket connections after ~30s of inactivity
+		// Using 20s interval ensures connection stays alive on mobile devices
+		const HEARTBEAT_INTERVAL = 20000;
+		const MAX_MISSED_HEARTBEATS = 2; // Allow 2 missed heartbeats before closing
+		let missedHeartbeats = 0;
+		
 		ws.heartbeat = setInterval(function () {
 			if (ws.beat) {
-				ws.close();
-				clearInterval(ws.heartbeat);
+				missedHeartbeats++;
+				if (missedHeartbeats >= MAX_MISSED_HEARTBEATS) {
+					ws.close();
+					clearInterval(ws.heartbeat);
+				}
 			} else {
 				ws.beat = true;
+				missedHeartbeats = 0;
 				try {
 					ws.send("heartbeat");
 				} catch (e) {
 					ws.close();
 				}
 			}
-		}, 60000);
+		}, HEARTBEAT_INTERVAL);
 		
 		ws.on("message", function (message) {
 			const messageStr = message.toString();

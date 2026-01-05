@@ -211,3 +211,198 @@ export async function triggerInstallPrompt(): Promise<boolean> {
 	
 	return outcome === 'accepted';
 }
+
+// ========== Screen Wake Lock API ==========
+// Prevents the screen from turning off during gameplay
+// Especially important for PWA on iOS/Safari
+
+interface WakeLockSentinel extends EventTarget {
+	released: boolean;
+	type: 'screen';
+	release(): Promise<void>;
+}
+
+interface NavigatorWakeLock {
+	request(type: 'screen'): Promise<WakeLockSentinel>;
+}
+
+declare global {
+	interface Navigator {
+		wakeLock?: NavigatorWakeLock;
+	}
+}
+
+let wakeLockSentinel: WakeLockSentinel | null = null;
+let wakeLockEnabled = false;
+
+/**
+ * Check if Screen Wake Lock API is supported
+ */
+export function isWakeLockSupported(): boolean {
+	return 'wakeLock' in navigator;
+}
+
+/**
+ * Request a screen wake lock to keep the screen on
+ * This should be called when gameplay starts
+ */
+export async function requestWakeLock(): Promise<boolean> {
+	if (!isWakeLockSupported()) {
+		console.log('[PWA] Screen Wake Lock API is not supported');
+		// Fallback: try to keep screen on using video element (works on some iOS versions)
+		startNoSleepFallback();
+		return false;
+	}
+
+	try {
+		wakeLockSentinel = await navigator.wakeLock!.request('screen');
+		wakeLockEnabled = true;
+		console.log('[PWA] Screen Wake Lock acquired');
+
+		// Listen for release event (e.g., when tab becomes hidden)
+		wakeLockSentinel.addEventListener('release', () => {
+			console.log('[PWA] Screen Wake Lock was released');
+			wakeLockEnabled = false;
+			wakeLockSentinel = null;
+		});
+
+		// Re-acquire wake lock when page becomes visible again
+		document.addEventListener('visibilitychange', handleVisibilityChange);
+
+		return true;
+	} catch (err) {
+		console.error('[PWA] Failed to acquire Screen Wake Lock:', err);
+		// Fallback for older browsers
+		startNoSleepFallback();
+		return false;
+	}
+}
+
+/**
+ * Release the screen wake lock
+ * This should be called when gameplay ends or app is closed
+ */
+export async function releaseWakeLock(): Promise<void> {
+	stopNoSleepFallback();
+	document.removeEventListener('visibilitychange', handleVisibilityChange);
+
+	if (wakeLockSentinel) {
+		try {
+			await wakeLockSentinel.release();
+			console.log('[PWA] Screen Wake Lock released');
+		} catch (err) {
+			console.error('[PWA] Failed to release Screen Wake Lock:', err);
+		}
+		wakeLockSentinel = null;
+		wakeLockEnabled = false;
+	}
+}
+
+/**
+ * Handle visibility change to re-acquire wake lock when page becomes visible
+ * This is important because wake lock is automatically released when page is hidden
+ */
+async function handleVisibilityChange(): Promise<void> {
+	if (document.visibilityState === 'visible' && wakeLockEnabled && !wakeLockSentinel) {
+		// Re-acquire wake lock when page becomes visible
+		try {
+			wakeLockSentinel = await navigator.wakeLock!.request('screen');
+			console.log('[PWA] Screen Wake Lock re-acquired after visibility change');
+			
+			wakeLockSentinel.addEventListener('release', () => {
+				console.log('[PWA] Screen Wake Lock was released');
+				wakeLockSentinel = null;
+			});
+		} catch (err) {
+			console.error('[PWA] Failed to re-acquire Screen Wake Lock:', err);
+		}
+	}
+}
+
+/**
+ * Check if wake lock is currently active
+ */
+export function isWakeLockActive(): boolean {
+	return wakeLockSentinel !== null && !wakeLockSentinel.released;
+}
+
+// ========== NoSleep Fallback for older browsers ==========
+// Uses a hidden video element to prevent screen from sleeping
+// This is a workaround for browsers that don't support Wake Lock API
+
+let noSleepVideo: HTMLVideoElement | null = null;
+let noSleepEnabled = false;
+
+/**
+ * Create a silent video that loops to prevent screen sleep
+ * This works on iOS Safari and some older browsers
+ */
+function startNoSleepFallback(): void {
+	if (noSleepEnabled) return;
+
+	// Create a small, silent video element
+	// The video needs to be a valid video file to work on iOS
+	// Using a data URI of a minimal MP4 file
+	const SILENT_VIDEO_BASE64 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAAAhmcmVlAAAASm1kYXQAAAAaAAABoBhAQ//oACAAAAwgAAAAAAAAAAAAAAAAAAAAACgAH//4AAAAFgIQC//OEAAAAAAAAAAAAAAAAAAAATgAAAA5tZGF0AAACoAYQEP/6AAgAAAMIAAAAAAAAAAAAAAAAAAAAA';
+	
+	try {
+		noSleepVideo = document.createElement('video');
+		noSleepVideo.setAttribute('playsinline', '');
+		noSleepVideo.setAttribute('muted', '');
+		noSleepVideo.setAttribute('loop', '');
+		noSleepVideo.style.cssText = `
+			position: fixed;
+			top: -9999px;
+			left: -9999px;
+			width: 1px;
+			height: 1px;
+			opacity: 0;
+			pointer-events: none;
+		`;
+		noSleepVideo.src = SILENT_VIDEO_BASE64;
+		noSleepVideo.muted = true;
+		
+		document.body.appendChild(noSleepVideo);
+		
+		// Play the video (must be triggered by user interaction on iOS)
+		const playPromise = noSleepVideo.play();
+		if (playPromise !== undefined) {
+			playPromise
+				.then(() => {
+					console.log('[PWA] NoSleep fallback video started');
+					noSleepEnabled = true;
+				})
+				.catch((err) => {
+					console.log('[PWA] NoSleep fallback failed (requires user interaction):', err);
+					// Will try again on user interaction
+					document.addEventListener('click', tryStartNoSleep, { once: true });
+					document.addEventListener('touchstart', tryStartNoSleep, { once: true });
+				});
+		}
+	} catch (err) {
+		console.error('[PWA] Failed to create NoSleep fallback:', err);
+	}
+}
+
+function tryStartNoSleep(): void {
+	if (noSleepVideo && !noSleepEnabled) {
+		noSleepVideo.play()
+			.then(() => {
+				console.log('[PWA] NoSleep fallback started after user interaction');
+				noSleepEnabled = true;
+			})
+			.catch((err) => {
+				console.error('[PWA] NoSleep fallback failed:', err);
+			});
+	}
+}
+
+function stopNoSleepFallback(): void {
+	if (noSleepVideo) {
+		noSleepVideo.pause();
+		noSleepVideo.remove();
+		noSleepVideo = null;
+		noSleepEnabled = false;
+		console.log('[PWA] NoSleep fallback stopped');
+	}
+}
