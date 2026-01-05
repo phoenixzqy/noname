@@ -24,7 +24,7 @@ export function debounce<T extends (...args: any[]) => any>(sourceFunction: T, o
 		delay = 500;
 	}
 
-	let failResult = typeof options === "number" ? NO_RETURN : options?.failResult;
+	const failResult = typeof options === "number" ? NO_RETURN : options?.failResult;
 
     // @ts-ignore
 	return function (this: any, ...args: any[]) {
@@ -64,7 +64,7 @@ export function throttle<T extends (...args: any[]) => any>(sourceFunction: T, o
 		delay = 500;
 	}
 
-	let failResult = typeof options === "number" ? NO_RETURN : options?.failResult;
+	const failResult = typeof options === "number" ? NO_RETURN : options?.failResult;
 
     // @ts-ignore
 	return function (this: any, ...args: any[]) {

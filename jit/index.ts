@@ -6,7 +6,7 @@ export {};
 	const scope = new URL("./", location.href).toString();
 	if (import.meta.env.DEV) {
 		if (allowServiceWorker()) {
-			let registrations = await navigator.serviceWorker.getRegistrations();
+			const registrations = await navigator.serviceWorker.getRegistrations();
 			// Only unregister the JIT service worker, not the PWA service worker
 			const jitWorker = registrations.find(registration => {
 				const scriptURL = registration?.active?.scriptURL;
@@ -29,7 +29,7 @@ export {};
 
 	// 初次加载worker，需要重新启动一次
 	if (sessionStorage.getItem("isJITReloaded") !== "true") {
-		let registrations = await navigator.serviceWorker.getRegistrations();
+		const registrations = await navigator.serviceWorker.getRegistrations();
 		// Only unregister the JIT service worker, not the PWA service worker
 		const jitWorker = registrations.find(registration => {
 			const scriptURL = registration?.active?.scriptURL;

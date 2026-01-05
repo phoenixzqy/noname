@@ -22,6 +22,7 @@
         "build:full": "tsx scripts/build.ts --mode full",
         "build:diff": "tsx scripts/build.ts --mode diff",
         "build:pwa-icons": "node scripts/generate-pwa-icons.js",
+        "generate:icons": "node scripts/generate-pwa-icons.js",
         "lint": "eslint .",
         "vite": "vite"
     },

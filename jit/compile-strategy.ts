@@ -299,7 +299,7 @@ export class VueSFCStrategy extends CompileStrategy {
 	}
 	compileStyle(url: URL, descriptor: sfc.SFCDescriptor, id: string): string[] {
 		// 一个 Vue 文件可能有多个 style 标签
-		let styleIndex = 0;
+		const styleIndex = 0;
 		const result: string[] = [];
 		for (const styleBlock of descriptor.styles) {
 			const styleCode = sfc.compileStyle({

@@ -206,7 +206,8 @@ export class Audio {
 
 		const list = audioInfoString.match(/(?:(.*):|^)(true|\d+)(?::(.*)|$)/); // [path, number|true, ext]
 		if (list) {
-			let [, path, audioNum, ext] = list;
+			let [, path, , ext] = list;
+			const audioNum = list[2];
 			if (path == void 0) {
 				path = this.#Audio.defaultPath;
 			} else {

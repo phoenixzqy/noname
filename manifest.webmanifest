@@ -3,10 +3,10 @@
 	"short_name": "无名杀",
 	"description": "无名杀 - 三国杀在线游戏",
 	"start_url": "/",
-	"display": "standalone",
+	"display": "fullscreen",
 	"orientation": "landscape",
-	"background_color": "#1a1a1a",
-	"theme_color": "#1a1a1a",
+	"background_color": "#4e4240",
+	"theme_color": "#4e4240",
 	"icons": [
 		{
 			"src": "/pwa-icons/icon-72x72.png",

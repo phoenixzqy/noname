@@ -24,7 +24,7 @@ function getStatusInfo({ lib, get, _status }) {
 		} else {
 			str += "\nplayer: " + evt.player.name;
 		}
-		let distance = get.distance(_status.roundStart, evt.player, "absolute");
+		const distance = get.distance(_status.roundStart, evt.player, "absolute");
 		if (distance != Infinity) {
 			str += `\n座位号: ${distance + 1}`;
 		}
@@ -164,7 +164,7 @@ export function setOnError({ lib, game, get, _status }) {
 						const source = stackframes[0].source;
 						if (!source?.fileName) throw new Error();
 
-						let rawSourceMap = lib.init.reqSync(sourcePath + ".map");
+						const rawSourceMap = lib.init.reqSync(sourcePath + ".map");
 						if (!rawSourceMap) throw new Error();
 						const sourceMap = JSON.parse(rawSourceMap);
 
@@ -201,7 +201,7 @@ export function setOnError({ lib, game, get, _status }) {
 
 						log.push(...createShowCode(content, frame.lineNumber || 0));
 					} catch (e) {
-						let code = lib.init.reqSync(sourcePath);
+						const code = lib.init.reqSync(sourcePath);
 						if (code) log.push(...createShowCode(code, frame.lineNumber || 0));
 					}
 				}
