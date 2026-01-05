@@ -2852,12 +2852,19 @@ export class Game {
 		if (["blob:", "data:"].some(prefix => music.startsWith(prefix))) {
 			ui.backgroundMusic.src = music;
 		} else if (music.startsWith("db:")) {
-			game.getDB("image", music.slice(3)).then(result => (ui.backgroundMusic.src = result));
+			game.getDB("image", music.slice(3)).then(result => {
+				ui.backgroundMusic.src = result;
+				// Ensure volume is set after source change (Safari fix)
+				ui.backgroundMusic.volume = lib.config.volumn_background / 8;
+			});
+			return;
 		} else if (music.startsWith("ext:")) {
 			ui.backgroundMusic.src = `${lib.assetURL}extension/${music.slice(4)}`;
 		} else {
 			ui.backgroundMusic.src = `${lib.assetURL}audio/background/${music}.mp3`;
 		}
+		// Ensure volume is properly set after source change (Safari fix)
+		ui.backgroundMusic.volume = lib.config.volumn_background / 8;
 	}
 	// 某种意义上，改不了，得重写
 	// 等正式用import导入再说

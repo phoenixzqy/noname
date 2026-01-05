@@ -2588,9 +2588,15 @@ export class Create {
 		ui.arena.dataset.target_shake = lib.config.target_shake || "off";
 		ui.backgroundMusic = document.createElement("audio");
 		ui.backgroundMusic.volume = lib.config.volumn_background / 8;
+		// Safari/webkit requires preload to be set for volume to work properly
+		ui.backgroundMusic.preload = "auto";
 		game.playBackgroundMusic();
 		ui.backgroundMusic.autoplay = true;
 		ui.backgroundMusic.addEventListener("ended", game.playBackgroundMusic);
+		// Force volume update after audio loads (Safari fix)
+		ui.backgroundMusic.addEventListener("loadedmetadata", function() {
+			this.volume = lib.config.volumn_background / 8;
+		});
 		ui.window.appendChild(ui.backgroundMusic);
 		ui.window.addEventListener(
 			lib.config.touchscreen ? "touchend" : "click",

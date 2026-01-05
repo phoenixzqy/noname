@@ -4950,7 +4950,16 @@ export class Library {
 					},
 					onclick(volume) {
 						game.saveConfig("volumn_background", parseInt(volume));
+						// Safari requires explicit load() call for volume changes to take effect
+						const wasPlaying = !ui.backgroundMusic.paused;
+						const currentTime = ui.backgroundMusic.currentTime;
 						ui.backgroundMusic.volume = volume / 8;
+						// Force Safari to apply volume change
+						if (wasPlaying && currentTime > 0) {
+							ui.backgroundMusic.load();
+							ui.backgroundMusic.currentTime = currentTime;
+							ui.backgroundMusic.play().catch(() => {});
+						}
 					},
 				},
 				clear_background_music: {

@@ -1294,7 +1294,16 @@ export class Click {
 			volume = 0;
 		}
 		game.saveConfig("volumn_background", volume);
+		// Safari requires explicit reload for volume changes to take effect
+		const wasPlaying = !ui.backgroundMusic.paused;
+		const currentTime = ui.backgroundMusic.currentTime;
 		ui.backgroundMusic.volume = volume / 8;
+		// Force Safari to apply volume change
+		if (wasPlaying && currentTime > 0) {
+			ui.backgroundMusic.load();
+			ui.backgroundMusic.currentTime = currentTime;
+			ui.backgroundMusic.play().catch(() => {});
+		}
 		for (var i = 0; i < 8; i++) {
 			if (i < lib.config.volumn_background) {
 				this.parentNode.childNodes[i].innerHTML = "●";
