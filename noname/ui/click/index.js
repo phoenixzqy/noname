@@ -4719,6 +4719,8 @@ export class Click {
 		return false;
 	}
 	right(e) {
+		// Always prevent browser default context menu
+		e.preventDefault();
 		if (window.inSplash) {
 			return false;
 		}
@@ -4748,7 +4750,6 @@ export class Click {
 				ui.click.config();
 				break;
 		}
-		e.preventDefault();
 		return false;
 	}
 }

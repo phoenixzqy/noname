@@ -276,12 +276,14 @@ export async function boot() {
 	// 	config.set("layout", "mobile");
 	// }
 
+	// Always prevent browser default context menu
+	document.addEventListener("contextmenu", ui.click.right);
+
 	if (!config.get("touchscreen")) {
 		document.addEventListener("mousewheel", ui.click.windowmousewheel, { passive: true });
 		document.addEventListener("mousemove", ui.click.windowmousemove);
 		document.addEventListener("mousedown", ui.click.windowmousedown);
 		document.addEventListener("mouseup", ui.click.windowmouseup);
-		document.addEventListener("contextmenu", ui.click.right);
 	} else {
 		document.addEventListener("touchstart", ui.click.touchconfirm);
 		document.addEventListener("touchstart", ui.click.windowtouchstart);
