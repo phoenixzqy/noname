@@ -4349,7 +4349,7 @@ export class Click {
 		lib.placePoppedDialog(uiintro, e);
 		if (this.parentNode == ui.historybar) {
 			if (lib.config.show_history == "right") {
-				uiintro.style.left = ui.historybar.offsetLeft - 230 + "px";
+				uiintro.style.left = ui.historybar.offsetLeft - 490 + "px";
 			} else {
 				uiintro.style.left = ui.historybar.offsetLeft + 60 + "px";
 			}
