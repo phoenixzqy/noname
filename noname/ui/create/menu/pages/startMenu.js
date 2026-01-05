@@ -15,7 +15,7 @@ export const startMenu = function (connectMenu) {
 	var rightPane = start.lastChild;
 
 	/** 启动按钮 */
-	let startButton = ui.create.div(".menubutton.round.highlight", "启", start, function () {
+	let startButton = ui.create.div(".menubutton.round.highlight", "启动", start, function () {
 		if (this.animating || this.classList.contains("dim")) {
 			return;
 		}

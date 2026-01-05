@@ -226,7 +226,6 @@
 	width: 400px;
 	height: 300px;
 	position: absolute;
-	overflow: hidden;
 	padding: 0;
 }
 
@@ -716,8 +715,8 @@
 }
 
 .menu.main > .menu-content > div > .menubutton.round {
-	left: 335px;
-	top: 197px;
+	right: -90px;
+    bottom: 0;
 	z-index: 3;
 	transition-property: color, box-shadow;
 	transition-duration: 0.3s;
@@ -1173,9 +1172,9 @@ input.fileinput::-webkit-file-upload-button {
 }
 
 .menubutton.round {
-	width: 40px;
-	height: 40px;
-	border-radius: 100%;
+	min-width: 40px;
+	min-height: 40px;
+	border-radius: 8px;
 	font-size: 36px;
 	line-height: 40px;
 	font-family: "xinwei";
