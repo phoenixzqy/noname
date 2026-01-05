@@ -1356,6 +1356,7 @@ const skills = {
 			},
 			backup(links, player) {
 				return {
+					audio: "mbchongsi",
 					filterTarget: lib.filter.notMe,
 					ai1: () => 1,
 					ai2(target) {
@@ -2077,9 +2078,7 @@ const skills = {
 	},
 	mbkubai: {
 		audio: 6,
-		trigger: {
-			player: "useCard",
-		},
+		trigger: { player: "useCard" },
 		filter(event, player) {
 			if (player !== _status.currentPhase) {
 				return false;
@@ -2099,6 +2098,11 @@ const skills = {
 		},
 		forced: true,
 		locked: false,
+		logAudio(event, player, name) {
+			const num = Math.min(2, player.countMark("mbkubai"));
+			const index = num * 2 + 1;
+			return [`mbkubai${index}.mp3`, `mbkubai${index + 1}.mp3`];
+		},
 		async content(event, trigger, player) {
 			await player.draw();
 		},
@@ -2181,278 +2185,8 @@ const skills = {
 					},
 				},
 			},
-			suit: {
-				nopop: true,
-			},
-			number: {
-				nopop: true,
-			},
-		},
-	},
-	//sp钟会 by柴油鹿鹿
-	mbsizi: {
-		audio: 7,
-		logAudio(event) {
-			if (typeof event == "number") {
-				return `mbsizi${event}.mp3`;
-			}
-			return 2;
-		},
-		enable: "phaseUse",
-		usable: 1,
-		beginMarkCount: 4,
-		chargeSkill: 4,
-		filter(event, player) {
-			return player.countCharge() > 0;
-		},
-		chooseButton: {
-			dialog(event, player) {
-				return ui.create.dialog(get.prompt2("mbsizi"), "hidden");
-			},
-			chooseControl(event, player) {
-				const choices = Array.from(Array(player.countCharge())).map((v, i) => i + 1);
-				return [...choices, "cancel2"];
-			},
-			check(event, player) {
-				return get.rand(1, player.countCharge());
-			},
-			backup(result, player) {
-				return {
-					audio: "mbsizi",
-					logAudio: () => 2,
-					control: result.control,
-					async content(event, trigger, player) {
-						const { control: num } = get.info(event.name),
-							skill = "mbsizi_effect";
-						player.removeCharge(num);
-						player.addTempSkill(skill, { player: "phaseBegin" });
-						player.addMark(skill, num, false);
-						if (num > player.getHp()) {
-							player.addTempSkill("mbsizi_extra", { player: "phaseBegin" });
-						}
-					},
-				};
-			},
-			prompt(result, player) {
-				let prompt = `直到你的回合开始，接下来${get.cnNumber(result.control)}个回合：`;
-				let list = ["所有角色使用【杀】造成的伤害+1", "每个回合结束时，本回合内使用过【杀】的角色失去一点体力，你摸两张牌", "每个回合结束时，若本回合未有角色使用过【杀】，你与当前回合角色各失去1点体力"];
-				if (result.control <= player.hp) {
-					list = list.slice(0, 2);
-				}
-				return `###${prompt}###${list.join("<br>")}`;
-			},
-		},
-		group: "mbsizi_init",
-		subSkill: {
-			backup: {},
-			init: {
-				audio: "mbsizi",
-				logAudio: () => "mbsizi3.mp3",
-				trigger: {
-					player: "enterGame",
-					global: "phaseBefore",
-				},
-				filter(event, player) {
-					if (!player.countCharge(true)) {
-						return false;
-					}
-					return event.name != "phase" || game.phaseNumber == 0;
-				},
-				forced: true,
-				locked: false,
-				async content(event, trigger, player) {
-					const num = lib.skill.mbsizi.beginMarkCount;
-					player.addCharge(num);
-					await game.asyncDelayx();
-				},
-			},
-			extra: {
-				charlotte: true,
-			},
-			effect: {
-				charlotte: true,
-				onremove(player, skill) {
-					player.clearMark(skill, false);
-					player.removeSkill("mbsizi_extra");
-				},
-				intro: {
-					content(storage, player) {
-						if (!storage) {
-							return "已无效果";
-						}
-						let list = ["所有角色使用【杀】造成的伤害+1", "每个回合结束时，本回合内使用过【杀】的角色失去一点体力，你摸两张牌", "每个回合结束时，若本回合未有角色使用过【杀】，你与当前回合角色各失去1点体力"];
-						if (!player.hasSkill("mbsizi_extra")) {
-							list = list.slice(0, 2);
-						}
-						return `剩余可用${storage || "0"}个回合<br>${list.map(i => `<li>${i}`).join("<br>")}`;
-					},
-				},
-				trigger: {
-					global: ["phaseEnd", "damageBegin1"],
-				},
-				filter(event, player) {
-					if (!player.countMark("mbsizi_effect")) {
-						return false;
-					}
-					return event.name == "phase" || (event.card?.name == "sha" && event.notLink());
-				},
-				async cost(event, trigger, player) {
-					if (trigger.name == "phase") {
-						player.removeMark(event.skill, 1, false);
-						event.result = {
-							bool: true,
-							skill_popup: false,
-						};
-					} else {
-						trigger.num++;
-					}
-				},
-				async content(event, trigger, player) {
-					const targets = game.filterPlayer2(
-						current => {
-							return current.hasHistory("useCard", evt => evt.card?.name == "sha");
-						},
-						undefined,
-						true
-					);
-					const func = async target => {
-						if (!target?.isIn()) {
-							return;
-						}
-						await target.loseHp();
-					};
-					player.logSkill("mbsizi", null, null, null, [get.rand(4, 5)]);
-					if (targets.length) {
-						await game.doAsyncInOrder(targets, func);
-					}
-					await player.draw(2);
-					if (player.hasSkill("mbsizi_extra") && !targets?.length) {
-						player.logSkill("mbsizi", null, null, null, [get.rand(6, 7)]);
-						await game.doAsyncInOrder([_status.currentPhase, player], func);
-					}
-				},
-			},
-		},
-		ai: {
-			order: 10,
-			result: {
-				player: 1,
-			},
-		},
-	},
-	mbxiezhi: {
-		audio: 2,
-		trigger: {
-			player: "changeHpAfter",
-		},
-		filter(event, player) {
-			return event.num != 0;
-		},
-		forced: true,
-		async content(event, trigger, player) {
-			const max = Math.max(player.countCharge(true), 0);
-			const num = Math.min(Math.abs(trigger.num), max);
-			if (num > 0) {
-				player.addCharge(num);
-			}
-			const num2 = Math.abs(trigger.num) - num;
-			if (num2 > 0) {
-				const buff = `${event.name}_effect`;
-				player.addSkill(buff);
-				player.addMark(buff, 1, false);
-				game.log(player, "的手牌上限和出杀次数", "#y+1");
-				await game.delayx();
-			}
-		},
-		subSkill: {
-			effect: {
-				charlotte: true,
-				onremove: true,
-				mark: true,
-				intro: {
-					content: "手牌上限和出杀次数+#",
-				},
-				mod: {
-					maxHandcard(player, num) {
-						return num + player.countMark("mbxiezhi_effect");
-					},
-					cardUsable(card, player, num) {
-						if (card.name == "sha") {
-							return num + player.countMark("mbxiezhi_effect");
-						}
-					},
-				},
-			},
-		},
-	},
-	mbyunan: {
-		audio: 4,
-		trigger: {
-			source: "dying",
-		},
-		juexingji: true,
-		forced: true,
-		skillAnimation: true,
-		animationColor: "purple",
-		filter(event, player) {
-			return game.getRoundHistory("everything", evt => evt.name == "die").length > 0;
-		},
-		async content(event, trigger, player) {
-			player.awakenSkill(event.name);
-			const skill = "mbkechang";
-			if (!player.hasSkill(skill, null, null, false)) {
-				await player.addSkills(skill);
-			} else {
-				player.setStorage(skill, true);
-				player.popup(skill, "purple");
-				game.log(player, "升级了技能", `#g【${get.translation(skill)}】`);
-				await game.delayx();
-			}
-		},
-		derivation: ["mbkechang"],
-	},
-	mbkechang: {
-		audio: 2,
-		onremove: true,
-		zhuSkill: true,
-		forced: true,
-		trigger: {
-			global: "useCard1",
-		},
-		filter(event, player) {
-			if (event.card.name != "sha") {
-				return false;
-			}
-			return player.getStorage("mbkechang", false) === true;
-		},
-		async content(event, trigger, player) {
-			trigger.directHit.addArray(game.players);
-		},
-		ai: {
-			directHit_ai: true,
-			skillTagFilter(player, tag, arg) {
-				return player.getStorage("mbkechang", false) && arg?.card?.name == "sha";
-			},
-		},
-		derivation: ["mbkechang_rewrite"],
-		global: "mbkechang_global",
-		subSkill: {
-			rewrite: {
-				nopop: true,
-			},
-			global: {
-				charlotte: true,
-				mod: {
-					targetInRange(card, player) {
-						if (player.group != "qun" || card.name != "sha") {
-							return;
-						}
-						if (game.hasPlayer(current => current.hasSkill("mbkechang"))) {
-							return true;
-						}
-					},
-				},
-			},
+			suit: { nopop: true },
+			number: { nopop: true },
 		},
 	},
 	//手杀崔令仪
@@ -4976,21 +4710,20 @@ const skills = {
 		async content(event, trigger, player) {
 			const card = event.cards[0],
 				target = event.target;
-			if (!target.countCards("h")) {//神秘结算之空城即背水
+			if (!target.countCards("h")) {
+				//神秘结算之空城即背水
 				player.$throw(card);
 				await player.showCards(card, get.translation(player) + "发动了【劲镞】");
 				await player.modedDiscard(card);
-				if (!player.hasSkill("mbjinzu_used")) {
-					const stat = player.getStat().skill;
-					if (stat.mbjinzu) {
-						delete stat.mbjinzu;
-					}
+				const stat = player.getStat().skill;
+				if (stat.mbjinzu) {
+					delete stat.mbjinzu;
 				}
 				const skill = "mbjinzu_effect";
+				player.storage[skill] ??= new Map();
+				player.storage[skill].set(target, !player.storage[skill].has(target) ? 1 : player.storage[skill].get(target) + 1);
 				player.addTempSkill(skill);
-				const list = player.getStorage(skill);
-				list.push(target);
-				player.setStorage(skill, list, true);
+				player.markSkill(skill);
 				return;
 			}
 			const result =
@@ -5000,7 +4733,7 @@ const skills = {
 							bool: true,
 							cards: target.getCards("h"),
 						};
-			if (!result.bool) {
+			if (!result?.bool) {
 				return;
 			}
 			const cards = [card].concat(result.cards);
@@ -5022,67 +4755,75 @@ const skills = {
 						lose_list: lose_list,
 					})
 					.setContent("discardMultiple");
-				if (!player.hasSkill("mbjinzu_used")) {
-					//player.addTempSkill("mbjinzu_used", { global: ["phaseChange", "phaseEnd"] });
-					const stat = player.getStat().skill;
-					if (stat.mbjinzu) {
-						delete stat.mbjinzu;
-					}
+				const stat = player.getStat().skill;
+				if (stat.mbjinzu) {
+					delete stat.mbjinzu;
 				}
 			}
 			if (result.cards.some(cardx => get.number(cardx) <= number) && result.cards.some(cardx => get.number(cardx) >= number)) {
 				const skill = "mbjinzu_effect";
+				player.storage[skill] ??= new Map();
+				player.storage[skill].set(target, !player.storage[skill].has(target) ? 1 : player.storage[skill].get(target) + 1);
 				player.addTempSkill(skill);
-				const list = player.getStorage(skill);
-				list.push(target);
-				player.setStorage(skill, list, true);
+				player.markSkill(skill);
 			}
 		},
 		subSkill: {
-			used: {
-				charlotte: true,
-			},
 			effect: {
-				audio: "mbjinzu",
-				trigger: {
-					player: "useCard",
-					source: "damageBegin1",
-				},
+				charlotte: true,
 				onremove: true,
+				audio: "mbjinzu",
+				trigger: { player: "useCard" },
 				filter(event, player) {
-					if (event?.card?.name != "sha") {
-						return false;
-					}
-					if (event.name == "damage") {
-						const evt = event.getParent("useCard", true);
-						return evt?.jinzuEffect?.includes(event.player);
-					}
-					return player.getStorage("mbjinzu_effect").length;
-				},
-				intro: {
-					nocount: true,
-					content(storage, player) {
-						if (!storage?.length) {
-							return "无效果";
-						}
-						const targets = storage.toUniqued();
-						return `使用的下一张杀令下列角色不可响应，且造成伤害增加：<br>${targets.map(target => {
-							const count = storage.filter(current => current == target).length;
-							return `${get.translation(target)}：${count}`;
-						}).join("<br>")}`;
-					},
+					return event.card?.name == "sha";
 				},
 				forced: true,
-				charlotte: true,
 				async content(event, trigger, player) {
-					if (trigger.name == "damage") {
-						const count = trigger.getParent("useCard", true).jinzuEffect.filter(current => current == trigger.player).length;
-						trigger.num += count;
-					} else {
-						trigger.directHit.addArray(player.getStorage("mbjinzu_effect"));
-						trigger.jinzuEffect = player.getStorage("mbjinzu_effect").slice(0);
-						player.setStorage(event.name, null, true);
+					const targets = Array.from(player.storage[event.name].keys()).sortBySeat();
+					trigger.directHit.addArray(targets);
+					for (const [target, num] of player.storage[event.name]) {
+						const id = target.playerid;
+						const map = trigger.customArgs;
+						map[id] ??= {};
+						if (typeof map[id].extraDamage !== "number") {
+							map[id].extraDamage = 0;
+						}
+						map[id].extraDamage += num;
 					}
+					player.removeSkill(event.name);
+				},
+				ai: {
+					directHit_ai: true,
+					skillTagFilter(player, tag, arg) {
+						if (tag == "directHit_ai" && (arg?.card?.name !== "sha" || !player.getStorage("mbjinzu_effect", new Map())?.has(arg?.target))) return false;
+					},
+				},
+				intro: {
+					content(storage, player) {
+						if (!storage?.size) {
+							return "";
+						}
+						let str = "下一张杀不可响应的角色和对应伤害增加值";
+						for (const [target, num] of storage) {
+							str += `<li>${get.translation(target)}：${num}`;
+						}
+						return str;
+					},
+				},
+				targetprompt2: target => {
+					const player = get.player(),
+						card = get.card();
+					if (card?.name == "sha") {
+						if (player.getStorage("mbjinzu_effect", new Map())?.has(target)) {
+							return `强命+${player.getStorage("mbjinzu_effect", new Map()).get(target)}`;
+						}
+					}
+				},
+				onChooseToUse(event) {
+					event.targetprompt2.add(lib.skill.mbjinzu_effect.targetprompt2);
+				},
+				onChooseTarget(event) {
+					event.targetprompt2.add(lib.skill.mbjinzu_effect.targetprompt2);
 				},
 			},
 		},
@@ -5579,6 +5320,7 @@ const skills = {
 	mbxiezheng: {
 		audio: "jsrgxiezheng",
 		inherit: "jsrgxiezheng",
+		initGroup: "wei",
 		async cost(event, trigger, player) {
 			const mode = get.mode();
 			event.result = await player

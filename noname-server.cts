@@ -482,7 +482,7 @@ function createWebSocketServer(server: http.Server | https.Server, isSecure: boo
 				try {
 					arr = JSON.parse(messageStr);
 					if (!Array.isArray(arr)) {
-						throw "err";
+						throw new Error("err");
 					}
 				} catch (e) {
 					ws.sendl("denied", "banned");
