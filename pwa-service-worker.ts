@@ -6,16 +6,24 @@ const CACHE_NAME = 'noname-pwa-v1';
 const STATIC_CACHE_NAME = 'noname-static-v1';
 const DYNAMIC_CACHE_NAME = 'noname-dynamic-v1';
 
-// Core files to cache immediately on install
-const PRECACHE_ASSETS = [
-	'/',
-	'/index.html',
-	'/noname.js',
-	'/manifest.webmanifest',
-	'/game/config.js',
-	'/game/asset.js',
-	'/game/package.js',
-	'/noname/entry.js'
+// Get the base path from the service worker's location
+// This allows the PWA to work in subdirectories (e.g., /nonamekill/ on GitHub Pages)
+function getBasePath(): string {
+	const swPath = self.location.pathname;
+	const lastSlash = swPath.lastIndexOf('/');
+	return lastSlash > 0 ? swPath.substring(0, lastSlash + 1) : '/';
+}
+
+// Core files to cache immediately on install (relative to base path)
+const CORE_ASSETS = [
+	'',
+	'index.html',
+	'noname.js',
+	'manifest.webmanifest',
+	'game/config.js',
+	'game/asset.js',
+	'game/package.js',
+	'noname/entry.js'
 ];
 
 // Static assets patterns to cache
@@ -32,6 +40,9 @@ const DYNAMIC_EXTENSIONS = ['.js', '.ts', '.mjs'];
 // Install event - precache essential files
 self.addEventListener('install', (event: ExtendableEvent) => {
 	console.log('[PWA SW] Installing...');
+	const basePath = getBasePath();
+	const PRECACHE_ASSETS = CORE_ASSETS.map(asset => basePath + asset);
+	
 	event.waitUntil(
 		caches.open(CACHE_NAME)
 			.then(cache => {

@@ -10,8 +10,12 @@ import path from "path";
 
 const argv = minimist(process.argv.slice(2));
 
+// Support custom base path for deployments (e.g., GitHub Pages)
+// Usage: BASE_PATH=/nonamekill/ tsx scripts/build.ts
+const basePath = process.env.BASE_PATH || "/";
+
 const importMap: Record<string, string> = {
-	noname: "/noname.js",
+	noname: `${basePath}noname.js`,
 	vue: "vue/dist/vue.esm-browser.js",
 	"pinyin-pro": "pinyin-pro",
 	dedent: "dedent",
@@ -61,6 +65,7 @@ if (argv.mode) {
 
 // 继承vite.config.ts
 await build({
+	base: basePath,
 	build: {
 		// 需要覆写map文件，必须外置
 		sourcemap: argv.sourcemap || false,
@@ -90,7 +95,7 @@ await build({
 	},
 	plugins: [
 		viteStaticCopy({ targets: staticModules }),
-		generateImportMap(importMap),
+		generateImportMap(importMap, basePath),
 		jit(),
 		(() => {
 			let hasSourceMap = false;

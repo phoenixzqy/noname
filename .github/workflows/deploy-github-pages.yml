@@ -26,8 +26,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build client web app
-        run: npm run build:full
+      - name: Build client web app for GitHub Pages
+        run: npm run build:github-pages
 
       - name: Remove docs folder from dist
         run: rm -rf dist/docs
