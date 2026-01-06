@@ -41,6 +41,15 @@ jobs:
       - name: Remove README from dist
         run: rm -rf dist/README.md
 
+      - name: Rename index.html to nonamekill.html
+        run: mv dist/index.html dist/nonamekill.html
+
+      - name: Create list of files and folders to deploy
+        run: |
+          cd dist
+          ls -1 > ../deployment-list.txt
+          cat ../deployment-list.txt
+
       - name: Checkout GitHub Pages repository
         uses: actions/checkout@v4
         with:
@@ -48,11 +57,27 @@ jobs:
           token: ${{ secrets.NO_NAME_KILL_PAGES_DEPLOY_TOKEN }}
           path: pages-repo
 
-      - name: Clear existing nonamekill folder
-        run: rm -rf pages-repo/nonamekill
+      - name: Clean up old deployment if exists
+        run: |
+          if [ -f pages-repo/nanamekill-deployed.txt ]; then
+            echo "Found nanamekill-deployed.txt, cleaning up old deployment..."
+            cd pages-repo
+            while IFS= read -r item; do
+              if [ -e "$item" ]; then
+                echo "Removing: $item"
+                rm -rf "$item"
+              fi
+            done < nanamekill-deployed.txt
+            cd ..
+          else
+            echo "No previous deployment file found, skipping cleanup."
+          fi
 
-      - name: Copy dist to nonamekill
-        run: cp -r dist pages-repo/nonamekill
+      - name: Copy dist to root folder
+        run: cp -r dist/* pages-repo/
+
+      - name: Create deployment record file
+        run: cp deployment-list.txt pages-repo/nanamekill-deployed.txt
 
       - name: Commit and push to GitHub Pages
         run: |
