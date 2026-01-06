@@ -823,7 +823,7 @@ function initSheet() {
 }
 
 async function loadConfig() {
-	const path = "/game/config.js";
+	const path = new URL("game/config.js", rootURL).href;
 	await import(/*@vite-ignore*/ path);
 	lib.config = window.config;
 	lib.configOL = {};

@@ -2494,7 +2494,7 @@ export class Game {
 		}
 
 		const audio = document.createElement("audio");
-		audio.volume = lib.config.volumn_audio / 8;
+		audio.volume = lib.config.volumn_audio / 16;
 		audio.autoplay = true;
 
 		audio.oncanplay = ev => {
@@ -2722,7 +2722,7 @@ export class Game {
 		var str = "audio/skill/";
 		var audio = document.createElement("audio");
 		audio.autoplay = true;
-		audio.volume = lib.config.volumn_audio / 8;
+		audio.volume = lib.config.volumn_audio / 16;
 		audio.src = lib.assetURL + str + name + ".mp3";
 		audio.addEventListener("ended", function () {
 			this.remove();
@@ -2855,7 +2855,7 @@ export class Game {
 			game.getDB("image", music.slice(3)).then(result => {
 				ui.backgroundMusic.src = result;
 				// Ensure volume is set after source change (Safari fix)
-				ui.backgroundMusic.volume = lib.config.volumn_background / 8;
+				ui.backgroundMusic.volume = lib.config.volumn_background / 16;
 			});
 			return;
 		} else if (music.startsWith("ext:")) {
@@ -2864,7 +2864,7 @@ export class Game {
 			ui.backgroundMusic.src = `${lib.assetURL}audio/background/${music}.mp3`;
 		}
 		// Ensure volume is properly set after source change (Safari fix)
-		ui.backgroundMusic.volume = lib.config.volumn_background / 8;
+		ui.backgroundMusic.volume = lib.config.volumn_background / 16;
 	}
 	// 某种意义上，改不了，得重写
 	// 等正式用import导入再说

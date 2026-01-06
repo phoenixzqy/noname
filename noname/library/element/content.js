@@ -1623,7 +1623,7 @@ player.removeVirtualEquip(card);
 				hitsound = lib.assetURL + "audio/effect/" + hitsound;
 			}
 			var hitsound_audio = new Audio(hitsound);
-			hitsound_audio.volume = 0.25;
+			hitsound_audio.volume = 0.125;
 			var abs = 1;
 			var node_pos = 0;
 			if (custom_mapping) {

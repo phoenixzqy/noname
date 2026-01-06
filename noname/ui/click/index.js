@@ -1297,7 +1297,7 @@ export class Click {
 		// Safari requires explicit reload for volume changes to take effect
 		const wasPlaying = !ui.backgroundMusic.paused;
 		const currentTime = ui.backgroundMusic.currentTime;
-		ui.backgroundMusic.volume = volume / 8;
+		ui.backgroundMusic.volume = volume / 16;
 		// Force Safari to apply volume change
 		if (wasPlaying && currentTime > 0) {
 			ui.backgroundMusic.load();

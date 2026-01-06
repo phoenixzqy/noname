@@ -11,6 +11,14 @@ function allowServiceWorker() {
 	return import.meta.env.PROD && "serviceWorker" in navigator && location.protocol === "https:";
 }
 
+// Get the base path from the current location for PWA registration
+function getBasePath() {
+	// Get the directory path of the current URL
+	const pathname = location.pathname;
+	const lastSlash = pathname.lastIndexOf('/');
+	return lastSlash > 0 ? pathname.substring(0, lastSlash + 1) : '/';
+}
+
 // PWA Service Worker Registration
 async function registerPWA() {
 	if (!allowServiceWorker()) {
@@ -18,9 +26,11 @@ async function registerPWA() {
 		return;
 	}
 	
+	const basePath = getBasePath();
+	
 	try {
-		const registration = await navigator.serviceWorker.register('/pwa-sw.js', {
-			scope: '/'
+		const registration = await navigator.serviceWorker.register(basePath + 'pwa-sw.js', {
+			scope: basePath
 		});
 		console.log('[PWA] Service Worker registered with scope:', registration.scope);
 		

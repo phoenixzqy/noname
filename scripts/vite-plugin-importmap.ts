@@ -4,7 +4,7 @@ import path from "path";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
-export default function vitePluginJIT(importMap: Record<string, string> = {}): Plugin {
+export default function vitePluginJIT(importMap: Record<string, string> = {}, basePath: string = "/"): Plugin {
 	let root = process.cwd();
 	let isBuild = false;
 	const resolvedImportMap: Record<string, string> = {};
@@ -22,7 +22,7 @@ export default function vitePluginJIT(importMap: Record<string, string> = {}): P
 			for (const key in importMap) {
 				try {
 					const resolved = require.resolve(importMap[key]);
-					resolvedImportMap[key] = normalizePath("/" + path.relative(root, resolved));
+					resolvedImportMap[key] = normalizePath(basePath + path.relative(root, resolved));
 				} catch (e) {
 					resolvedImportMap[key] = importMap[key];
 				}
@@ -60,7 +60,7 @@ export default function vitePluginJIT(importMap: Record<string, string> = {}): P
 
 	const script = document.createElement("script");
 	script.type = "module";
-	script.src = "/noname/entry.js";
+	script.src = "${basePath}noname/entry.js";
 	document.head.appendChild(script);
 })();`
 			);
