@@ -27,10 +27,16 @@ jobs:
         run: npm ci
 
       - name: Build client web app
-        run: npm run build
+        run: npm run build:full
 
       - name: Remove docs folder from dist
         run: rm -rf dist/docs
+
+      - name: Remove server code from dist
+        run: rm -rf dist/noname-server.cjs
+
+      - name: Remove README from dist
+        run: rm -rf dist/README.md
 
       - name: Checkout GitHub Pages repository
         uses: actions/checkout@v4
