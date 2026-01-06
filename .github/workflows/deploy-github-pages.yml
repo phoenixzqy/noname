@@ -1,0 +1,55 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # Allows manual trigger
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build client web app
+        run: npm run build
+
+      - name: Remove docs folder from dist
+        run: rm -rf dist/docs
+
+      - name: Checkout GitHub Pages repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/${{ github.repository_owner }}.github.io
+          token: ${{ secrets.NO_NAME_KILL_PAGES_DEPLOY_TOKEN }}
+          path: pages-repo
+
+      - name: Clear existing nonamekill folder
+        run: rm -rf pages-repo/nonamekill
+
+      - name: Copy dist to nonamekill
+        run: cp -r dist pages-repo/nonamekill
+
+      - name: Commit and push to GitHub Pages
+        run: |
+          cd pages-repo
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --staged --quiet || git commit -m "Deploy nonamekill from ${{ github.repository }}@${{ github.sha }}"
+          git push
