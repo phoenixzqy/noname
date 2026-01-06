@@ -142,23 +142,8 @@ function createWebSocketServer(server: http.Server | https.Server, isSecure: boo
 			});
 		}
 		
-		// Default: only allow same-origin connections
-		// If origin is not provided (e.g., same-origin or non-browser clients), allow it
-		if (!origin) {
-			return true;
-		}
-		
-		// Check if origin matches the server's host
-		const host = req.headers.host;
-		if (!host) {
-			return false;
-		}
-		
-		// Build expected origins based on server protocol and host
-		const protocol = config.https ? 'https' : 'http';
-		const expectedOrigin = `${protocol}://${host}`;
-		
-		return origin === expectedOrigin || origin === expectedOrigin.replace(/\/$/, '');
+		// Default: allow all origins when no whitelist is configured
+		return true;
 	};
 
 	const util = {
