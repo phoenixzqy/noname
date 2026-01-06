@@ -94,6 +94,14 @@ const defaultConfig = {
 	debug: false,
 	dirname: cwd(),
 	sslDir: undefined,
+	// WS allowed/whitelisted origins (comma-separated list)
+	// e.g., WS_ALLOWED_ORIGINS="https://phoenixzqy.github.io,https://example.com"
+	wsAllowedOrigins: process.env.WS_ALLOWED_ORIGINS
+		? process.env.WS_ALLOWED_ORIGINS.split(',').map(o => o.trim())
+		: undefined,
+	// Home page redirect URL
+	// e.g., HOME_REDIRECT_URL="https://phoenixzqy.github.io/nonamekill/"
+	homeRedirectUrl: process.env.HOME_REDIRECT_URL || undefined,
 };
 
 // ========== WebSocket Server Logic ==========
@@ -113,13 +121,45 @@ interface ExtendedWebSocket extends WebSocket {
 	_onconfig?: ExtendedWebSocket;
 }
 
-function createWebSocketServer(server: http.Server | https.Server, isSecure: boolean) {
+function createWebSocketServer(server: http.Server | https.Server, isSecure: boolean, config: typeof defaultConfig) {
 	const bannedKeys: string[] = [];
 	const bannedIps: string[] = [];
 	const rooms: any[] = [];
 	const events: any[] = [];
 	const clients: { [key: string]: ExtendedWebSocket } = {};
 	const bannedKeyWords: string[] = [];
+
+	// Helper function to validate origin
+	const isOriginAllowed = (origin: string | undefined, req: http.IncomingMessage): boolean => {
+		// If whitelist is configured, check against it
+		if (config.wsAllowedOrigins && config.wsAllowedOrigins.length > 0) {
+			if (!origin) {
+				return false;
+			}
+			return config.wsAllowedOrigins.some(allowed => {
+				// Support exact match or trailing slash variations
+				return origin === allowed || origin === allowed.replace(/\/$/, '') || allowed.replace(/\/$/, '') === origin;
+			});
+		}
+		
+		// Default: only allow same-origin connections
+		// If origin is not provided (e.g., same-origin or non-browser clients), allow it
+		if (!origin) {
+			return true;
+		}
+		
+		// Check if origin matches the server's host
+		const host = req.headers.host;
+		if (!host) {
+			return false;
+		}
+		
+		// Build expected origins based on server protocol and host
+		const protocol = config.https ? 'https' : 'http';
+		const expectedOrigin = `${protocol}://${host}`;
+		
+		return origin === expectedOrigin || origin === expectedOrigin.replace(/\/$/, '');
+	};
 
 	const util = {
 		getNickname: function (str: any): string {
@@ -419,6 +459,17 @@ function createWebSocketServer(server: http.Server | https.Server, isSecure: boo
 	wss.on("connection", function (ws: ExtendedWebSocket, req) {
 		ws.sendl = util.sendl.bind(ws);
 		const remoteAddress = req.socket.remoteAddress;
+		const origin = req.headers.origin;
+
+		// Check if origin is allowed
+		if (!isOriginAllowed(origin, req)) {
+			console.log(`[WS] Connection rejected from origin: ${origin}`);
+			ws.sendl("denied", "origin");
+			setTimeout(function () {
+				ws.close();
+			}, 500);
+			return;
+		}
 		
 		if (bannedIps.indexOf(remoteAddress || "") !== -1) {
 			ws.sendl("denied", "banned");
@@ -569,6 +620,11 @@ export default function createApp(config = defaultConfig) {
 	app.use(express.static(config.dirname, { maxAge: maxAge, dotfiles: "allow" }));
 
 	app.get("/", (req, res) => {
+		// If home redirect URL is configured, redirect to it
+		if (config.homeRedirectUrl) {
+			res.redirect(config.homeRedirectUrl);
+			return;
+		}
 		res.send(fs.readFileSync(join("index.html")));
 	});
 
@@ -758,12 +814,12 @@ export default function createApp(config = defaultConfig) {
 		};
 		server = https.createServer(SSLOptions, app);
 		// Attach WebSocket server
-		createWebSocketServer(server, true);
+		createWebSocketServer(server, true, config);
 		server.listen(config.port, callback);
 	} else {
 		server = http.createServer(app);
 		// Attach WebSocket server
-		createWebSocketServer(server, false);
+		createWebSocketServer(server, false, config);
 		server.listen(config.port, callback);
 	}
 

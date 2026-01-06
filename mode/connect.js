@@ -49,7 +49,8 @@ export default () => {
 				node.style.left = "calc(50% - 210px)";
 				node.style.top = "calc(50% - 20px)";
 				node.style.whiteSpace = "nowrap";
-				node.textContent = lib.config.last_ip || lib.hallURL;
+				node.dataset.ip = lib.config.last_ip || lib.hallURL;
+				node.textContent = "*".repeat(20);
 				// disable WS address editing because we always use default address now
 				// node.contentEditable = true;
 				node.style.webkitUserSelect = "text";
@@ -62,7 +63,7 @@ export default () => {
 					if (e) {
 						e.preventDefault();
 					}
-					const ip = node.textContent;
+					const ip = node.dataset.ip;
 					game.requireSandboxOn(ip);
 					game.saveConfig("last_ip", ip);
 					game.connect(ip, function (success) {
@@ -114,7 +115,7 @@ export default () => {
 				ui.hall_button = ui.create.system(
 					"联机大厅",
 					function () {
-						node.textContent = get.config("hall_ip") || lib.hallURL;
+						node.dataset.ip = get.config("hall_ip") || lib.hallURL;
 						connect();
 					},
 					true
@@ -124,7 +125,7 @@ export default () => {
 				}
 				ui.recentIP = ui.create.system("最近连接", null, true);
 				var clickLink = function () {
-					node.textContent = this.textContent;
+					node.dataset.ip = this.dataset.ip;
 					connect();
 				};
 				lib.setPopped(
@@ -139,7 +140,9 @@ export default () => {
 						});
 						var list = ui.create.div(".caption");
 						for (var i = 0; i < lib.config.recentIP.length; i++) {
-							ui.create.div(".text.textlink", list, clickLink).textContent = get.trimip(lib.config.recentIP[i]);
+							var linkItem = ui.create.div(".text.textlink", list, clickLink);
+							linkItem.dataset.ip = lib.config.recentIP[i];
+							linkItem.textContent = get.trimip(lib.config.recentIP[i]);
 						}
 						uiintro.add(list);
 						var clear = uiintro.add('<div class="text center">清除</div>');
@@ -161,11 +164,11 @@ export default () => {
 							var text2 = text.split("\n")[2];
 							var ip = text2.slice(5);
 							if (ip.length > 0 && text2.startsWith("联机地址:") && (ced || confirm("是否根据剪贴板的邀请链接以进入联机地址和房间？"))) {
-								node.innerHTML = ip;
+								node.dataset.ip = ip;
 								event.textnode.innerHTML = "正在连接...";
 								clearTimeout(event.timeout);
-								game.saveConfig("last_ip", node.innerHTML);
-								game.connect(node.innerHTML, function (success) {
+								game.saveConfig("last_ip", node.dataset.ip);
+								game.connect(node.dataset.ip, function (success) {
 									if (!success && event.textnode) {
 										alert("邀请链接解析失败");
 										event.textnode.innerHTML = "输入联机地址";

@@ -26,6 +26,15 @@ import skills from "./skill.js";
 
 const html = dedent;
 const isHttps = typeof location !== "undefined" && location.protocol === "https:";
+const isGhPages = typeof location !== "undefined" && location.hostname.endsWith("github.io");
+
+function getHallUrl() {
+	if (isGhPages) {
+		return atob("d3NzOi8vbm9uYW1la2lsbC1mYWU4aHpkOWZnZXZjOGdiLmNhbmFkYWNlbnRyYWwtMDEuYXp1cmV3ZWJzaXRlcy5uZXQv");
+	} else {
+		return `${isHttps ? "wss" : "ws"}://${location.host}`;
+	}
+}
 
 export class Library {
 	configprefix = "noname_0.9_";
@@ -33,7 +42,7 @@ export class Library {
 	updateURLS = updateURLs;
 	updateURL = updateURLs.github;
 	mirrorURL = updateURLs.coding;
-	hallURL = `${isHttps ? "wss" : "ws"}://${location.host}`;
+	hallURL = getHallUrl();
 	assetURL = assetURL;
 	userAgent = userAgentLowerCase;
 	characterDefaultPicturePath = characterDefaultPicturePath;
