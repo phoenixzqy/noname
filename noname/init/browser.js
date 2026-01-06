@@ -2,8 +2,14 @@
 export default async function browserReady({ lib, game }) {
 	lib.path = (await import("path-browserify-esm")).default;
 
+	// Determine API base URL: use Azure server for GitHub Pages, otherwise use current host
+	const isGhPages = typeof location !== "undefined" && location.hostname.endsWith("github.io");
+	const apiBaseUrl = isGhPages 
+		? atob("aHR0cHM6Ly9ub25hbWVraWxsLWZhZThoemQ5ZmdldmM4Z2IuY2FuYWRhY2VudHJhbC0wMS5henVyZXdlYnNpdGVzLm5ldA==") // Azure server
+		: "";
+
 	try {
-		await fetch(`/checkFile?fileName=noname.js`)
+		await fetch(`${apiBaseUrl}/checkFile?fileName=noname.js`)
 			.then(response => response.json())
 			.then(result => {
 				if (!result?.success) throw new Error(result.errorMsg);
@@ -48,7 +54,7 @@ export default async function browserReady({ lib, game }) {
 	 * @return {void} - 由于三端的异步需求和历史原因，文件管理必须为回调异步函数
 	 */
 	game.checkFile = function checkFile(fileName, callback, onerror) {
-		fetch(`/checkFile?fileName=${fileName}`)
+		fetch(`${apiBaseUrl}/checkFile?fileName=${fileName}`)
 			.then(response => response.json())
 			.then(result => {
 				if (result) {
@@ -85,7 +91,7 @@ export default async function browserReady({ lib, game }) {
 	 * @return {void} - 由于三端的异步需求和历史原因，文件管理必须为回调异步函数
 	 */
 	game.checkDir = function checkDir(dir, callback, onerror) {
-		fetch(`/checkDir?dir=${dir}`)
+		fetch(`${apiBaseUrl}/checkDir?dir=${dir}`)
 			.then(response => response.json())
 			.then(result => {
 				if (result) {
@@ -109,7 +115,7 @@ export default async function browserReady({ lib, game }) {
 	};
 
 	game.readFile = function readFile(fileName, callback = () => {}, error = () => {}) {
-		fetch(`/readFile?fileName=${fileName}`)
+		fetch(`${apiBaseUrl}/readFile?fileName=${fileName}`)
 			.then(response => response.json())
 			.then(result => {
 				if (result?.success) {
@@ -132,7 +138,7 @@ export default async function browserReady({ lib, game }) {
 	};
 
 	game.readFileAsText = function readFileAsText(fileName, callback = () => {}, error = () => {}) {
-		fetch(`/readFileAsText?fileName=${fileName}`)
+		fetch(`${apiBaseUrl}/readFileAsText?fileName=${fileName}`)
 			.then(response => response.json())
 			.then(result => {
 				if (result?.success) {
@@ -162,7 +168,7 @@ export default async function browserReady({ lib, game }) {
 					filePath += "/" + name;
 				}
 
-				fetch(`/writeFile`, {
+				fetch(`${apiBaseUrl}/writeFile`, {
 					method: "post",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
@@ -183,7 +189,7 @@ export default async function browserReady({ lib, game }) {
 	};
 
 	game.removeFile = function removeFile(fileName, callback = () => {}) {
-		fetch(`/removeFile?fileName=${fileName}`)
+		fetch(`${apiBaseUrl}/removeFile?fileName=${fileName}`)
 			.then(response => response.json())
 			.then(result => {
 				callback(result.errorMsg);
@@ -192,7 +198,7 @@ export default async function browserReady({ lib, game }) {
 	};
 
 	game.getFileList = function getFileList(dir, callback = () => {}, onerror) {
-		fetch(`/getFileList?dir=${dir}`)
+		fetch(`${apiBaseUrl}/getFileList?dir=${dir}`)
 			.then(response => response.json())
 			.then(result => {
 				if (!result) {
@@ -216,7 +222,7 @@ export default async function browserReady({ lib, game }) {
 	};
 
 	game.createDir = function createDir(directory, successCallback = () => {}, errorCallback = () => {}) {
-		fetch(`/createDir?dir=${directory}`)
+		fetch(`${apiBaseUrl}/createDir?dir=${directory}`)
 			.then(response => response.json())
 			.then(result => {
 				if (result?.success) {
@@ -228,7 +234,7 @@ export default async function browserReady({ lib, game }) {
 			.catch(errorCallback);
 	};
 	game.removeDir = function removeDir(directory, successCallback = () => {}, errorCallback = () => {}) {
-		fetch(`/removeDir?dir=${directory}`)
+		fetch(`${apiBaseUrl}/removeDir?dir=${directory}`)
 			.then(response => response.json())
 			.then(result => {
 				if (result?.success) {
