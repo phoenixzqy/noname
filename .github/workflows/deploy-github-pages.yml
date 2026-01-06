@@ -30,7 +30,10 @@ jobs:
         run: npm run build
 
       - name: Remove docs folder from dist
-        run: rm -rf dist/docs
+        run: |
+          rm -rf dist/docs
+          rm -rf dist/README.md
+          rm -rf dist/noname-server.cjs
 
       - name: Checkout GitHub Pages repository
         uses: actions/checkout@v4
