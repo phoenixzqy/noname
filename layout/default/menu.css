@@ -715,7 +715,7 @@
 }
 
 .menu.main > .menu-content > div > .menubutton.round {
-	right: -90px;
+	left: 405px;
     bottom: 0;
 	z-index: 3;
 	transition-property: color, box-shadow;
