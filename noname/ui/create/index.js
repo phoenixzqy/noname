@@ -2587,7 +2587,7 @@ export class Create {
 		// if(lib.config.player_height_nova=='long') ui.arena.classList.add('player_autolong');
 		ui.arena.dataset.target_shake = lib.config.target_shake || "off";
 		ui.backgroundMusic = document.createElement("audio");
-		ui.backgroundMusic.volume = lib.config.volumn_background / 8;
+		ui.backgroundMusic.volume = lib.config.volumn_background / 16;
 		// Safari/webkit requires preload to be set for volume to work properly
 		ui.backgroundMusic.preload = "auto";
 		game.playBackgroundMusic();
@@ -2595,7 +2595,7 @@ export class Create {
 		ui.backgroundMusic.addEventListener("ended", game.playBackgroundMusic);
 		// Force volume update after audio loads (Safari fix)
 		ui.backgroundMusic.addEventListener("loadedmetadata", function() {
-			this.volume = lib.config.volumn_background / 8;
+			this.volume = lib.config.volumn_background / 16;
 		});
 		ui.window.appendChild(ui.backgroundMusic);
 		ui.window.addEventListener(
