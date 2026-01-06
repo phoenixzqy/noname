@@ -20,7 +20,6 @@
         "build": "tsx scripts/build.ts",
         "build:types": "tsc -p tsconfig.types.json",
         "build:full": "tsx scripts/build.ts --mode full",
-        "build:github-pages": "BASE_PATH=/nonamekill/ tsx scripts/build.ts --mode full",
         "build:diff": "tsx scripts/build.ts --mode diff",
         "build:pwa-icons": "node scripts/generate-pwa-icons.js",
         "generate:icons": "node scripts/generate-pwa-icons.js",
