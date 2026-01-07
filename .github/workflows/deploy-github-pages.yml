@@ -27,9 +27,7 @@ jobs:
         run: npm ci
 
       - name: Build client web app for GitHub Pages
-        run: npm run build:full
-        env:
-          GITHUB_PAGES: true
+        run: npm run build:github-pages
 
       - name: Remove docs folder from dist
         run: |

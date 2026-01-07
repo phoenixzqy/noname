@@ -20,6 +20,7 @@
         "build": "tsx scripts/build.ts",
         "build:types": "tsc -p tsconfig.types.json",
         "build:full": "tsx scripts/build.ts --mode full",
+        "build:github-pages": "tsx scripts/build.ts --mode full && tsx scripts/set-manifest-start-url.ts nonamekill.html",
         "build:diff": "tsx scripts/build.ts --mode diff",
         "build:pwa-icons": "node scripts/generate-pwa-icons.js",
         "generate:icons": "node scripts/generate-pwa-icons.js",
