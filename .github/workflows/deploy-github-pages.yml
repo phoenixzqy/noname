@@ -28,6 +28,8 @@ jobs:
 
       - name: Build client web app for GitHub Pages
         run: npm run build:full
+        env:
+          GITHUB_PAGES: true
 
       - name: Remove docs folder from dist
         run: |
